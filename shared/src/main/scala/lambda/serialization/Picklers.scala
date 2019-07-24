@@ -1,16 +1,8 @@
-package serialization
+package lambda.serialization
 
-import boopickle._
 import lambda.SharedClass
+import upickle.default.{ReadWriter => RW, macroRW}
 
-object Picklers
-    extends Base
-    with BasicImplicitPicklers
-    with TransformPicklers
-    with TuplePicklers
-    with MaterializePicklerFallback {
-  import boopickle.Default._
-
-  implicit val playerPickler = generatePickler[SharedClass]
-
+object Picklers {
+  implicit val sharedClassPickler: RW[SharedClass] = macroRW
 }

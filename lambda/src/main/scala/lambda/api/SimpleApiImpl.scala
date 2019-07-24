@@ -1,6 +1,7 @@
 package lambda.api
 
 import upickle._
+import lambda.serialization.Picklers._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
