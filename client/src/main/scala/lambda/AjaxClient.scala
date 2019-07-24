@@ -1,12 +1,9 @@
 package lambda
 
-import java.nio.ByteBuffer
 import autowire._
 import org.scalajs.dom.ext.Ajax
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
-import serialization.Picklers._
 import ujson.Js
 
 /**
@@ -25,7 +22,7 @@ object Client
   override def doCall(req: Request): Future[ujson.Value] = {
     Ajax
       .post(
-        url = +req.path
+        url = backendUrl + req.path
           .mkString("/"),
         data = upickle.default.write(req.args),
         headers = Map("Content-Type" -> "application/json")
