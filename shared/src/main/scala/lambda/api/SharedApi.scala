@@ -6,5 +6,5 @@ import scala.concurrent.Future
 
 // shared API interface
 trait SharedApi {
-  def doThing(sharedClass: SharedClass): Future[(String, String)]
+  def doThing(name: String, description: String): Future[SharedClass]
 }

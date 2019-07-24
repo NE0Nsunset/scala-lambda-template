@@ -9,8 +9,21 @@ import autowire._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+import lambda.serialization.Picklers._
 
 object LambdaHandler extends App {
+
+  override def main(args: Array[String]): Unit = {
+    super.main(args)
+    val path = "lambda/api/SharedApi/doThing"
+    val x = """{"name":"name","description":"desc"}"""
+    val jsonString = ujson.read(x)
+    println(jsonString)
+    println(
+      Await.result(autowireApiController(path, jsonString),
+                   Duration.create(10, "seconds")))
+  }
+
   val corsHeaders: JsObject = Json.obj(
     "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
@@ -59,7 +72,11 @@ object LambdaHandler extends App {
 
     val autowireRequest = autowire.Core
       .Request(strippedPath.split("/"),
-               upickle.default.read[Map[String, String]](bodyJsonString))
+               ujson
+                 .read(bodyJsonString)
+                 .asInstanceOf[ujson.Obj]
+                 .value
+                 .toMap)
 
     val route = AutowireServer.routeList
       .find(r => r.isDefinedAt(autowireRequest))
@@ -67,7 +84,8 @@ object LambdaHandler extends App {
 
     val router = route(autowireRequest)
 
-    router.map(r => println(response(r, headers = corsHeaders).toString()))
-    router
+    router.map(r =>
+      println(response(r.toString(), headers = corsHeaders).toString()))
+    router.map(_.toString())
   }
 }

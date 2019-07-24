@@ -5,10 +5,11 @@ import org.scalajs.dom.ext.Ajax
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import ujson.Js
+import upickle._
 
 /**
   * An autowire ajax client that maps API contracts from shared/api as method calls
-  * e.g. Client[SharedApi].doThing(SharedClass("name here", "description here"))
+  * e.g. Client[SharedApi].doThing("name here", "description here")
   */
 object Client
     extends autowire.Client[ujson.Value,
