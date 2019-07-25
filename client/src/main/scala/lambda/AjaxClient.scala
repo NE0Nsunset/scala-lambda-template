@@ -18,7 +18,7 @@ object Client
 
   // TODO setup config
   val backendUrl: String =
-    "https://btn2p0qqs2.execute-api.us-west-1.amazonaws.com/a/api/"
+    "http://localhost:8080/api/"
 
   override def doCall(req: Request): Future[ujson.Value] = {
     Ajax

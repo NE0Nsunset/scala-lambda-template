@@ -60,7 +60,7 @@ object FrontendApp extends js.JSApp {
             <div class="icon-block">
               <h2 class="center light-blue-text"><i class="material-icons">flash_on</i></h2>
               <h5 class="center">Simple API Example</h5>
-              <p class="light">Click the button to send a request to the lambda backend. On it's return, you should see an alert with the result!  </p>
+              <p class="light">!Click the button to send a request to the lambda backend. On it's return, you should see an alert with the result!  </p>
               {
               if (isLoading.bind)
                 <div class="progress">
@@ -72,7 +72,7 @@ object FrontendApp extends js.JSApp {
               {
               simpleApiFuture.bind.map(_.bind) match {
                 case Some(Some(Success(sharedClass))) => <div>{sharedClass.display}</div>
-                case _ => <!-- -->
+                case _ => <div>>{simpleApiFuture.bind.map(_.bind).toString}</div>
               }
               }
               <div class="row">

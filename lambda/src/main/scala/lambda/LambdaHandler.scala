@@ -13,17 +13,6 @@ import lambda.serialization.Picklers._
 
 object LambdaHandler extends App {
 
-  override def main(args: Array[String]): Unit = {
-    super.main(args)
-    val path = "lambda/api/SharedApi/doThing"
-    val x = """{"name":"name","description":"desc"}"""
-    val jsonString = ujson.read(x)
-    println(jsonString)
-    println(
-      Await.result(autowireApiController(path, jsonString),
-                   Duration.create(10, "seconds")))
-  }
-
   val corsHeaders: JsObject = Json.obj(
     "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
