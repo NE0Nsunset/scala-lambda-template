@@ -1,11 +1,13 @@
 package lambda
 
 import java.io.{InputStream, OutputStream}
+
 import com.amazonaws.services.lambda.runtime.Context
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import ujson.Value
 import upickle._
 import autowire._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -48,7 +50,7 @@ object LambdaHandler extends App {
     val bodyJson = ujson.read(body)
 
     val autowireFuture = autowireApiController(path, bodyJson) map { s =>
-      val r: JsObject = response(s)
+      val r: JsObject = response(s.toString)
       output.write(r.toString().getBytes("UTF-8"))
     }
 
@@ -75,6 +77,6 @@ object LambdaHandler extends App {
 
     router.map(r =>
       println(response(r.toString(), headers = corsHeaders).toString()))
-    router.map(_.toString())
+    router.map(ujson.write(_))
   }
 }

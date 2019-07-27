@@ -20,6 +20,9 @@ import scalaz.std.option._
 object FrontendApp extends js.JSApp {
 
   val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
+  val clientConfig = new ClientConfig
+
+  println(js.Dynamic.global.clientConfig.backendApi)
 
   @dom val isLoading: Binding[Boolean] =
     simpleApiFuture.bind.map(_.bind) match {

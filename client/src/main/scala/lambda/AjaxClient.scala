@@ -2,9 +2,10 @@ package lambda
 
 import autowire._
 import org.scalajs.dom.ext.Ajax
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import ujson.Js
+import ujson.Value
 import upickle._
 
 /**
@@ -16,9 +17,7 @@ object Client
                             upickle.default.Reader,
                             upickle.default.Writer] {
 
-  // TODO setup config
-  val backendUrl: String =
-    "http://localhost:8080/api/"
+  val backendUrl: String = FrontendApp.clientConfig.backendApiUrl
 
   override def doCall(req: Request): Future[ujson.Value] = {
     Ajax
@@ -28,11 +27,12 @@ object Client
         data = upickle.default.write(req.args),
         headers = Map("Content-Type" -> "application/json")
       )
-      .map(_.responseText)
+      .map(x => ujson.read(x.responseText))
   }
 
   def write[Result: upickle.default.Writer](r: Result) =
     upickle.default.write(r)
-  def read[Result: upickle.default.Reader](p: ujson.Value) =
+  def read[Result: upickle.default.Reader](p: Value) = {
     upickle.default.read[Result](p)
+  }
 }
