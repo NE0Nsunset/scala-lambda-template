@@ -28,7 +28,11 @@ object LambdaHandler extends App {
       "isBase64Encoded" -> false,
       "statusCode" -> statusCode,
       "body" -> v,
-      "headers" -> headers
+      "headers" -> Json.obj(
+        "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+        "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+        "access-control-allow-origin" -> "*"
+      )
     )
   }
 
@@ -48,9 +52,11 @@ object LambdaHandler extends App {
     val bodyString = StringContext treatEscapes jsonstr("body").toString()
     val body = bodyString.substring(1, bodyString.length - 1)
     val bodyJson = ujson.read(body)
-
+    println(path)
+    println(bodyJson.toString())
     val autowireFuture = autowireApiController(path, bodyJson) map { s =>
-      val r: JsObject = response(s.toString)
+      val r: JsObject = response(s.toString, 200, corsHeaders)
+      println(r.toString)
       output.write(r.toString().getBytes("UTF-8"))
     }
 
@@ -60,7 +66,8 @@ object LambdaHandler extends App {
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {
     val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
-
+    println(strippedPath)
+    println(bodyJsonString.toString())
     val autowireRequest = autowire.Core
       .Request(strippedPath.split("/"),
                ujson
@@ -75,8 +82,6 @@ object LambdaHandler extends App {
 
     val router = route(autowireRequest)
 
-    router.map(r =>
-      println(response(r.toString(), headers = corsHeaders).toString()))
     router.map(ujson.write(_))
   }
 }

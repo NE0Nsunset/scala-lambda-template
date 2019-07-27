@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  version: "v${app_version}"
+  title: "${api_title}"
+paths:
+  /api/{proxy+}:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+
+    post:
+      security:
+        []
+      responses:
+        "200":
+          description: Successful operation
+      x-amazon-apigateway-integration:
+        credentials: "${iam_role_arn}"
+        uri: "${lambda_api_backend_arn}"
+        responses:
+          default:
+            statusCode: "500"
+          200:
+            statusCode: "200"
+          403:
+            statusCode: "403"
+          404:
+            statusCode: "404"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "AWS_PROXY"
+      x-amazon-apigateway-request-validator: "all"
+      summary: Autowire Api Endpoint
+tags:
+  []
+security:
+  []
+"x-amazon-apigateway-request-validators": {
+  "all": {
+    "validateRequestBody": true,
+    "validateRequestParameters": true
+  },
+  "params-only": {
+    "validateRequestBody": false,
+    "validateRequestParameters": true
+  }
+}

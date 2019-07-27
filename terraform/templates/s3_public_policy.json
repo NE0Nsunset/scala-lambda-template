@@ -1,0 +1,22 @@
+{
+  "Version": "2012-10-17",
+  "Id": "CFREAD",
+  "Statement": [
+    {
+      "Sid": "AllowCFRead",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": ["${cf_access_iam_util_arn}"]
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "${bucket_arn}",
+        "${bucket_arn}/*"
+      ]
+    }
+  ]
+}

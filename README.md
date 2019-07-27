@@ -13,10 +13,11 @@ to limit the amount of unnecessary dependencies in the AWS jar file.
 
 ## Project Structure
     client/                     # Binding.scala / scalajs frontend codebase
-    |-- static_resources            # index.html bootstrap and other static resources
     shared/                     # Shared objects between client and server
     lambda/                     # AWS Lambda functions
     lambda-offline/             # Local wiring of above lambda functions for development
+    | -- src/main/public          # static files
+    terraform                   # Base terraform configuration files, see terraform section below
     README.md                   # This readme file 
 
 ## SBT Commands
@@ -43,5 +44,27 @@ TODO
 TODO
 
 ## Terraform deployment
-TODO
+The terraform folder contains a basic deploy infrastructure. It is namespaced, so all assets should share a common prefix. 
 
+This project depends on terraform 11. Version 12 will not work. The terraform cli is available through brew as `brew install @terraform0.11`. 
+You'll also need to install AWS cli and setup credentials, see https://docs.aws.amazon.com/singlesignon/latest/userguide/howtogetcredentials.html
+Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` environment variable to connect. 
+
+- After installing terraform and aws cli, cd into the terraform config folder `cd terraform`
+- run `terraform init` to install the required modules
+- run `terraform plan` to build the infrastructure plan, this gives an opportunity to see what will be built
+- run `terraform apply` to deploy the plan to aws
+
+What gets deployed?
+- api gateway
+- lambda(s)
+- s3 bucket for static files and static files
+- roles
+
+To cleanup your deployment, run `terraform destroy` to remove every asset `apply` created in AWS.
+
+TODO clunky deployment
+The steps above will deploy the backend api and s3 bucket that hosts the static resources like index.html and client-opt.js. 
+At the moment I haven't worked out how to inject the backend api url from the deploy to the static files. To resolve this, after terraform apply'ing, 
+copy the `api_gateway_url` from the output and paste it into lambda-offline/src/main/pubic/index.html in the json value for `backendApi`. 
+Run `terraform apply` again and it will deploy just the updated index.html with the correct backend api url.
