@@ -24,14 +24,14 @@ object Client
       .post(
         url = backendUrl + req.path
           .mkString("/"),
-        data = upickle.default.write(req.args),
+        data = upickle.default.writeJs(req.args).toString(),
         headers = Map("Content-Type" -> "application/json")
       )
       .map(x => ujson.read(x.responseText))
   }
 
   def write[Result: upickle.default.Writer](r: Result) =
-    upickle.default.write(r)
+    upickle.default.writeJs(r)
   def read[Result: upickle.default.Reader](p: Value) = {
     upickle.default.read[Result](p)
   }

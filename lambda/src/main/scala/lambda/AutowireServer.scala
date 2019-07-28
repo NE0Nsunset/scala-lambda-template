@@ -1,6 +1,13 @@
 package lambda
 
-import lambda.api.{SharedApi, SharedApiImpl, SimpleApi, SimpleApiImpl}
+import lambda.api.{
+  AnotherApiExample,
+  AnotherApiExampleImpl,
+  SharedApi,
+  SharedApiImpl,
+  SimpleApi,
+  SimpleApiImpl
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import lambda.serialization.Picklers._
@@ -15,12 +22,16 @@ object AutowireServer
   def write[Result: upickle.default.Writer](r: Result) =
     upickle.default.writeJs(r)
 
-  def read[Result: upickle.default.Reader](p: Value) =
-    upickle.default.read[Result](p)
+  def read[Result: upickle.default.Reader](p: Value) = {
+    val r = upickle.default.read[Result](p)
+    println(r)
+    r
+  }
 
   // Bind Api Contracts to their implementations here
   val routeList = List(
     AutowireServer.route[SimpleApi](SimpleApiImpl),
-    AutowireServer.route[SharedApi](SharedApiImpl)
+    AutowireServer.route[SharedApi](SharedApiImpl),
+    AutowireServer.route[AnotherApiExample](AnotherApiExampleImpl)
   )
 }

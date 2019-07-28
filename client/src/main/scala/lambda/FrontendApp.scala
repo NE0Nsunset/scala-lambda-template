@@ -2,14 +2,17 @@ package lambda
 
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import org.scalajs.dom.document
+
 import scala.scalajs.js.annotation.JSExport
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
 import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import autowire._
-import lambda.api.{SharedApi, SimpleApi}
+import lambda.api.{AnotherApiExample, SharedApi, SimpleApi}
 import lambda.serialization.Picklers._
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scalaz.std.option._
@@ -20,9 +23,8 @@ import scalaz.std.option._
 object FrontendApp extends js.JSApp {
 
   val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
+  val movieApiExample: Var[Option[FutureBinding[Option[Movie]]]] = Var(None)
   val clientConfig = new ClientConfig
-
-  println(js.Dynamic.global.clientConfig.backendApi)
 
   @dom val isLoading: Binding[Boolean] =
     simpleApiFuture.bind.map(_.bind) match {
@@ -31,17 +33,26 @@ object FrontendApp extends js.JSApp {
       case Some(Some(Failure(_)))        => false
     }
 
-  def sendIt(): Unit = {
+  def sendSimpleApiRequest(): Unit = {
     val n: String =
       document.getElementById("name").asInstanceOf[HTMLInputElement].value
     val d: String = document
       .getElementById("description")
       .asInstanceOf[HTMLInputElement]
       .value
+    println(n)
+    println(d)
     val f = Client[SharedApi]
       .doThing(n, d)
       .call()
     simpleApiFuture.value = Some(FutureBinding(f))
+  }
+
+  def sendMovieApiExampleRequest(): Unit = {
+    val movieTitle: String =
+      document.getElementById("movieTitle").asInstanceOf[HTMLInputElement].value
+    val f = Client[AnotherApiExample].findMovieByName(movieTitle).call()
+    movieApiExample.value = Some(FutureBinding(f))
   }
 
   @dom def navBar: Binding[Node] =
@@ -52,6 +63,78 @@ object FrontendApp extends js.JSApp {
       </div>
     </nav>
 
+  @dom def simpleExampleRender: Binding[Node] =
+    <div class="col s12 m4">
+      <div class="icon-block">
+        <h5 class="center">Simple API Example</h5>
+        <p class="light">Click the button to send a request to the lambda backend. On its return, you should the result! (it's shared/lambda.SharedClass)</p>
+        {
+        if (isLoading.bind)
+          <div class="progress">
+            <div class="indeterminate"></div>
+          </div>
+        else
+          <!-- -->
+        }
+        {
+        simpleApiFuture.bind.map(_.bind) match {
+          case Some(Some(Success(sharedClass))) => <div>{sharedClass.toString}</div>
+          case _ => <div>>{simpleApiFuture.bind.map(_.bind).toString}</div>
+        }
+        }
+        <div class="row">
+          <div class="input-field col s6">
+            <input id="name" type="text" class="validate" />
+            <label for="first_name">Name</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="description" type="text" class="validate" />
+            <label for="last_name">Description</label>
+          </div>
+          <a href="javascript:void(0)" class="btn-large waves-effect waves-light orange" onclick={_:Event => sendSimpleApiRequest()}>Try it!</a>
+        </div>
+      </div>
+    </div>
+
+  @dom def movieApiExampleRender: Binding[Node] =
+    <div class="col s12 m4">
+      <div class="icon-block">
+        <h5 class="center">shared/lambda.api.AnotherApiExample</h5>
+        <p class="light">
+          This time, we'll search for a movie in our simple database.
+          Try searching for "Shawshank" or "Godfather".
+          Then, take a look at lambda/lambda.api.AnotherApiExampleImpl for other searches you can make
+        </p>
+        {
+        if (isLoading.bind)
+          <div class="progress">
+            <div class="indeterminate"></div>
+          </div>
+        else
+          <!-- -->
+        }
+        {
+        movieApiExample.bind.map(_.bind) match {
+          case Some(Some(Success(Some(movie)))) =>
+            <div>
+              {movie.title}<br />
+              {movie.year.toString}<br />
+              <p>{movie.description}</p>
+              <p><img src={movie.thumbnail}/></p>
+            </div>
+          case _ => <div>>{movieApiExample.bind.map(_.bind).toString}</div>
+        }
+        }
+        <div class="row">
+          <div class="input-field col s6">
+            <input id="movieTitle" type="text" class="validate" />
+            <label for="movieTitle">Movie Title</label>
+          </div>
+          <a href="javascript:void(0)" class="btn-large waves-effect waves-light orange" onclick={_:Event => sendMovieApiExampleRequest()}>Search Movie!</a>
+        </div>
+      </div>
+    </div>
+
   @dom def render: Binding[Node] =
     <div class="section no-pad-bot" id="index-banner">
       <div class="container">
@@ -59,38 +142,8 @@ object FrontendApp extends js.JSApp {
         <h1 class="header center orange-text">Example API calls</h1>
         <br /><br />
         <div class="row">
-          <div class="col s12 m4">
-            <div class="icon-block">
-              <h2 class="center light-blue-text"><i class="material-icons">flash_on</i></h2>
-              <h5 class="center">Simple API Example</h5>
-              <p class="light">!Click the button to send a request to the lambda backend. On it's return, you should see an alert with the result!  </p>
-              {
-              if (isLoading.bind)
-                <div class="progress">
-                  <div class="indeterminate"></div>
-                </div>
-              else 
-                <!-- -->
-              }
-              {
-              simpleApiFuture.bind.map(_.bind) match {
-                case Some(Some(Success(sharedClass))) => <div>{sharedClass.display}</div>
-                case _ => <div>>{simpleApiFuture.bind.map(_.bind).toString}</div>
-              }
-              }
-              <div class="row">
-                <div class="input-field col s6">
-                  <input id="name" type="text" class="validate" />
-                    <label for="first_name">Name</label>
-                  </div>
-                  <div class="input-field col s6">
-                    <input id="description" type="text" class="validate" />
-                      <label for="last_name">Description</label>
-                    </div>
-                  </div>
-              <a href="javascript:void(0)" class="btn-large waves-effect waves-light orange" onclick={_:Event => sendIt()}>Try it!</a>
-            </div>
-          </div>
+          {simpleExampleRender.bind}
+          {movieApiExampleRender.bind}
         </div>
       </div>
     </div>
