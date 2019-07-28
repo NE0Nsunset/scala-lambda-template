@@ -15,6 +15,7 @@ import lambda.serialization.Picklers._
 
 object LambdaHandler extends App {
 
+  // TODO fix why this didn't work
   val corsHeaders: JsObject = Json.obj(
     "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",

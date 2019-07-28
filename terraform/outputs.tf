@@ -3,5 +3,5 @@ output "s3_website_url" {
 }
 
 output "api_gateway_url" {
-  value = "Backend Url: ${aws_api_gateway_deployment.a.invoke_url}"
+  value = "Backend Url: ${aws_api_gateway_deployment.a.invoke_url}/api/"
 }

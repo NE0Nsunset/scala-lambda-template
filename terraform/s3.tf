@@ -23,6 +23,20 @@ resource "aws_s3_bucket_policy" "frontend_ui_s3_public_policy" {
   policy = "${data.template_file.frontend_ui_public_policy.rendered}"
 }
 
+
+// static files
+data "template_file" "client_config_script" {
+  template = "${file("${path.module}/templates/client_config_script.js")}"
+
+  vars {
+    api_backend_url = "${aws_api_gateway_deployment.a.invoke_url}"
+  }
+
+  depends_on = [
+    "aws_api_gateway_deployment.a",
+  ]
+}
+
 resource "aws_s3_bucket_object" "client-opt" {
   bucket = "${aws_s3_bucket.frontend_ui.id}"
   key    = "client-opt.js"
@@ -61,4 +75,69 @@ resource "aws_s3_bucket_object" "indexhtml" {
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/index.html"))}"
+}
+
+resource "aws_s3_bucket_object" "materializecss" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "css/materialize.min.css"
+  source = "../lambda-offline/src/main/public/css/materialize.min.css"
+  content_type = "text/css"
+
+  acl    = "public-read"
+
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  etag = "${md5(file("../lambda-offline/src/main/public/css/materialize.min.css"))}"
+}
+
+resource "aws_s3_bucket_object" "stylecss" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "css/style.css"
+  source = "../lambda-offline/src/main/public/css/style.css"
+  content_type = "text/css"
+
+  acl    = "public-read"
+
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  etag = "${md5(file("../lambda-offline/src/main/public/css/style.css"))}"
+}
+
+resource "aws_s3_bucket_object" "initjs" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "js/init.js"
+  source = "../lambda-offline/src/main/public/js/init.js"
+  content_type = "text/javascript"
+
+  acl    = "public-read"
+
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  etag = "${md5(file("../lambda-offline/src/main/public/js/init.js"))}"
+}
+
+resource "aws_s3_bucket_object" "materializejs" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "js/materialize.min.js"
+  source = "../lambda-offline/src/main/public/js/materialize.min.js"
+  content_type = "text/javascript"
+
+  acl    = "public-read"
+
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  etag = "${md5(file("../lambda-offline/src/main/public/js/materialize.min.js"))}"
+}
+
+resource "aws_s3_bucket_object" "client_config_js" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "js/client_config.js"
+  content = "${data.template_file.client_config_script.rendered}"
+  content_type = "text/javascripts"
+
+  acl    = "public-read"
 }

@@ -1,0 +1,1 @@
+window.clientConfig = {"backendApi": "${api_backend_url}/api/"}
