@@ -5,8 +5,6 @@ import lambda.api.{
   AnotherApiExampleImpl,
   SharedApi,
   SharedApiImpl,
-  SimpleApi,
-  SimpleApiImpl
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,7 +28,6 @@ object AutowireServer
 
   // Bind Api Contracts to their implementations here
   val routeList = List(
-    AutowireServer.route[SimpleApi](SimpleApiImpl),
     AutowireServer.route[SharedApi](SharedApiImpl),
     AutowireServer.route[AnotherApiExample](AnotherApiExampleImpl)
   )

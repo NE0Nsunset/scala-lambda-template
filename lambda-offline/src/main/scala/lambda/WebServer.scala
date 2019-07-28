@@ -2,6 +2,7 @@ package lambda
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import lambda.LambdaHandler.autowireApiController
+import lambda.LambdaHandler.corsHeaders
 import play.api.libs.json.{JsObject, JsValue, Json}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 
@@ -17,9 +18,9 @@ import akka.stream.ActorMaterializer
 
 import scala.io.StdIn
 
-object WebServer {
-  def main(args: Array[String]) {
-
+object WebServer extends App {
+  override def main(args: Array[String]) {
+    val blah = ""
     implicit val system = ActorSystem("my-system")
     implicit val materializer = ActorMaterializer()
 
@@ -74,6 +75,7 @@ object WebServer {
             entity(as[String]) { str =>
               complete(autowireApiController(path, ujson.read(str)).map(x => {
                 println(x)
+                println(corsHeaders.toString())
                 x
               }))
             }
@@ -83,6 +85,11 @@ object WebServer {
 
     val bindingFuture = Http().bindAndHandle(route, host, port)
 
-    println(s"Server online at http://$host:${port.toString}")
+    println(
+      s"Server online at http://$host:${port.toString}\n Press return to stop")
+//    StdIn.readLine() // let it run until user presses return
+//    bindingFuture
+//      .flatMap(_.unbind()) // trigger unbinding from the port
+//      .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }

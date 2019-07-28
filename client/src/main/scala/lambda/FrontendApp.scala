@@ -2,17 +2,14 @@ package lambda
 
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import org.scalajs.dom.document
-
 import scala.scalajs.js.annotation.JSExport
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
 import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import autowire._
-import lambda.api.{AnotherApiExample, SharedApi, SimpleApi}
+import lambda.api.{AnotherApiExample, SharedApi}
 import lambda.serialization.Picklers._
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scalaz.std.option._
@@ -40,8 +37,6 @@ object FrontendApp extends js.JSApp {
       .getElementById("description")
       .asInstanceOf[HTMLInputElement]
       .value
-    println(n)
-    println(d)
     val f = Client[SharedApi]
       .doThing(n, d)
       .call()
@@ -141,6 +136,7 @@ object FrontendApp extends js.JSApp {
         <br /><br />
         <h1 class="header center orange-text">Example API calls</h1>
         <br /><br />
+        <p></p>
         <div class="row">
           {simpleExampleRender.bind}
           {movieApiExampleRender.bind}

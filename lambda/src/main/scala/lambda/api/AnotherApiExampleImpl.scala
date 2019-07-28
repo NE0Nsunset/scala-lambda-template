@@ -6,7 +6,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object AnotherApiExampleImpl extends AnotherApiExample {
   override def findMovieByName(name: String): Future[Option[Movie]] = {
-    println(name.toList)
     Future {
       SimpleMovieDb.movies.find(
         _.title.toLowerCase().contains(name.toLowerCase()))
@@ -45,7 +44,7 @@ object SimpleMovieDb {
       "12 Angry Men",
       1957,
       "A jury holdout attempts to prevent a miscarriage of justice by forcing his colleagues to reconsider the evidence.",
-      "A jury holdout attempts to prevent a miscarriage of justice by forcing his colleagues to reconsider the evidence."
+      "https://m.media-amazon.com/images/M/MV5BMWU4N2FjNzYtNTVkNC00NzQ0LTg0MjAtYTJlMjFhNGUxZDFmXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_UX182_CR0,0,182,268_AL_.jpg"
     )
   )
 }

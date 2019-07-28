@@ -1,22 +1,21 @@
 package lambda
 
 import java.io.{InputStream, OutputStream}
-
 import com.amazonaws.services.lambda.runtime.Context
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, Json}
 import ujson.Value
 import upickle._
 import autowire._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
 
-object LambdaHandler extends App {
+object LambdaHandler extends App with AWSLogging {
 
-  // TODO fix why this didn't work
-  val corsHeaders: JsObject = Json.obj(
+  lazy val corsEnabled = System.getenv("ENABLE_CORS") == "true"
+
+  lazy val corsHeaders: JsObject = Json.obj(
     "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
     "access-control-allow-origin" -> "*"
@@ -29,11 +28,7 @@ object LambdaHandler extends App {
       "isBase64Encoded" -> false,
       "statusCode" -> statusCode,
       "body" -> v,
-      "headers" -> Json.obj(
-        "access-control-allow-headers" -> "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-        "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-        "access-control-allow-origin" -> "*"
-      )
+      "headers" -> headers
     )
   }
 
@@ -46,19 +41,24 @@ object LambdaHandler extends App {
   def autowireApiHandler(input: InputStream,
                          output: OutputStream,
                          context: Context): Unit = {
+
     val s = scala.io.Source.fromInputStream(input).mkString
     val jsonstr = ujson.read(s)
 
     val path = jsonstr("path").toString.replaceFirst("(/)?api/", "")
-    val bodyString = StringContext treatEscapes jsonstr("body").toString()
-    val body = bodyString.substring(1, bodyString.length - 1)
-    val bodyJson = ujson.read(body)
-    println(path)
-    println(bodyJson.toString())
+    val bodyString = StringContext treatEscapes jsonstr("body")
+      .toString()
+      .replaceAll("^\"|\"$", "")
+
+    logMessage(path.toString)
+    logMessage(bodyString)
+
+    val bodyJson = ujson.read(bodyString)
     val autowireFuture = autowireApiController(path, bodyJson) map { s =>
-      val r: JsObject = response(s.toString, 200, corsHeaders)
-      println(r.toString)
-      output.write(r.toString().getBytes("UTF-8"))
+      val r: String =
+        response(s, 200, if (corsEnabled) corsHeaders else Json.obj())
+          .toString()
+      output.write(r.getBytes("UTF-8"))
     }
 
     Await.result(autowireFuture, Duration.create(60, "seconds"))
@@ -67,8 +67,8 @@ object LambdaHandler extends App {
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {
     val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
-    println(strippedPath)
-    println(bodyJsonString.toString())
+    logMessage(strippedPath)
+    logMessage(bodyJsonString.toString())
     val autowireRequest = autowire.Core
       .Request(strippedPath.split("/"),
                ujson

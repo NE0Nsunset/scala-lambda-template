@@ -12,7 +12,8 @@ resource "aws_lambda_function" "lambda-autowire-backend" {
 
   environment {
     variables {
-      ENABLE_CORS = 0
+      ENABLE_CORS = "true"
+      ENABLE_DEBUG = "true"
     }
   }
   depends_on = [
