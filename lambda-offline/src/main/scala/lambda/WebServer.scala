@@ -25,7 +25,7 @@ object WebServer extends App {
     implicit val materializer = ActorMaterializer()
 
     val host: String = "localhost"
-    val port: Int = 9000
+    val port: Int = 9090
 
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.dispatcher

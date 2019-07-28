@@ -23,11 +23,13 @@ Terraform is used to manage and deploy a basic infrastructure to AWS.
     README.md                   # This readme file 
 
 ## SBT Commands
-- Compile frontend              - `sbt client/fastOptJS` or `sbt client/fullOptJS` 
-                                  (local is wired for fastOpt while deploy uses fullOpt)
-- Compile fat jar for aws       - `sbt lambda/assembly`
-- Run local development server  - Inside sbt console run `~offline/reStart` 
-                                  This starts a continuous compile, meaning any changes in client or lambda folders will recompile and restart the webserver
+After starting sbt from the project root, use the following commands to:
+- Compile frontend and backend  - `buildTask`
+- Compile frontend              - `client/fastOptJS` or `client/fullOptJS` 
+                                  (local is wired for fastOpt while Terraform deploy uses fullOpt)
+- Compile backend               - `sbt lambda/assembly`
+- Run local development server  - `~reStart` 
+                                  This starts a continuous compile, meaning any changes in project folders will recompile and restart the webserver
 
 ## DynamoDB
 TODO write simple DynamoDB service example
@@ -41,8 +43,8 @@ After following the install guide:
 DynamoDB shell can be accessed via http://localhost:8000/shell/
 
 ## Local Server
-Akka HTTP is used for developing locally. Run it in sbt via `~offline/reStart`. While running, changes to code in client,shared or lambda will cause 
-SBT to re-compile and re-start the web server. The http server is hosted at `http://localhost:9000`
+Akka HTTP is used for developing locally. Run it in SBT via `~reStart`. While running, changes to code in sub project folders will cause 
+SBT to re-compile and re-start the web server. The http server is hosted at `http://localhost:9090`
 
 ## Running Tests
 TODO
@@ -54,13 +56,14 @@ This project depends on terraform 11. Version 12 will not work. Install the Terr
 You'll also need to install AWS CLI and setup credentials, see https://docs.aws.amazon.com/singlesignon/latest/userguide/howtogetcredentials.html
 Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` environment variable to connect. 
 
+### Deploy
 - After installing Terraform and AWS CLI, cd into the ./terraform config folder, `cd terraform`
-- run the SBT commands to compile the frontend, `sbt client/fullOptJS` and backend, `sbt lambda/assembly`. Terraform will upload the target output files.
+- run the SBT command to compile the frontend and backend, `sbt buildTask`. Terraform will upload the target output files.
 - run `terraform init` to install the required modules
-- run `terraform plan` to build the infrastructure plan, this gives an opportunity to see what will be built
-- run `terraform apply` to deploy the plan to aws
+- run `terraform plan` to build the infrastructure plan. This also gives an opportunity to see what will be built
+- run `terraform apply` to deploy the plan to AWS
 
-What gets deployed?
+### What gets deployed?
 - API Gateway
 - Lambda(s)
 - S3 bucket for index.html and frontend static files
@@ -68,7 +71,7 @@ What gets deployed?
 
 When terraform finishes the output will contain a url for the backend api and frontend. Copy/paste the frontend url into a browser to see your deployment.
 
-# Cleanup
+### Cleanup
 To remove all assets created during deploy run `terraform destroy`. Please note, this starter template stores terraform state locally in the ./terraform/ folder.
 You will need this state to perform changes or remove the assets. If the state files are erased, Terraform will essentially start from scratch. 
 

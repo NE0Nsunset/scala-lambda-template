@@ -30,6 +30,13 @@ object FrontendApp extends js.JSApp {
       case Some(Some(Failure(_)))        => false
     }
 
+  @dom val isMovieApiLoading: Binding[Boolean] =
+    movieApiExample.bind.map(_.bind) match {
+      case Some(Some(Success(_))) | None => false
+      case Some(None)                    => true
+      case Some(Some(Failure(_)))        => false
+    }
+
   def sendSimpleApiRequest(): Unit = {
     val n: String =
       document.getElementById("name").asInstanceOf[HTMLInputElement].value
@@ -37,7 +44,7 @@ object FrontendApp extends js.JSApp {
       .getElementById("description")
       .asInstanceOf[HTMLInputElement]
       .value
-    val f = Client[SharedApi]
+    val f = AjaxClient[SharedApi]
       .doThing(n, d)
       .call()
     simpleApiFuture.value = Some(FutureBinding(f))
@@ -46,7 +53,7 @@ object FrontendApp extends js.JSApp {
   def sendMovieApiExampleRequest(): Unit = {
     val movieTitle: String =
       document.getElementById("movieTitle").asInstanceOf[HTMLInputElement].value
-    val f = Client[AnotherApiExample].findMovieByName(movieTitle).call()
+    val f = AjaxClient[AnotherApiExample].findMovieByName(movieTitle).call()
     movieApiExample.value = Some(FutureBinding(f))
   }
 
@@ -101,7 +108,7 @@ object FrontendApp extends js.JSApp {
           Then, take a look at lambda/lambda.api.AnotherApiExampleImpl for other searches you can make
         </p>
         {
-        if (isLoading.bind)
+        if (isMovieApiLoading.bind)
           <div class="progress">
             <div class="indeterminate"></div>
           </div>
