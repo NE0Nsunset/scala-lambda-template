@@ -1,6 +1,6 @@
 # SCALA LAMBDA BINDING TEMPLATE
-Basic structure for a Binding.scala frontend powered by scala -> java AWS Lambda functions.
-This project uses Autowire to bind a single AWS Lambda function to automatically absorb all frontend requests and direct
+Basic structure for a [Binding.scala](https://github.com/ThoughtWorksInc/Binding.scala) frontend powered by scala -> java AWS Lambda functions.
+This project uses [Autowire](https://github.com/lihaoyi/autowire) to bind a single AWS Lambda function to automatically absorb all frontend requests and direct
 them to their appropriate api calls. Additional frontend request endpoints would not require additional setup in AWS beyond the first lambda.
 
 The project is split into multiple parts. The `client` folder contains the scalajs / binding.scala codebase. 
@@ -11,7 +11,7 @@ local development purposes.
 A 'fat' jar is created via the sbt-assembly plugin to upload to AWS. This is also the reason for the distinction between lambda-offline and lambda,
 to limit the amount of unnecessary dependencies in the AWS jar file.
 
-Terraform is used to manage and deploy a basic infrastructure to AWS.
+[Terraform](https://www.terraform.io/docs/index.html) is used to manage and deploy a basic infrastructure to AWS.
 
 ## Project Structure
     client/                     # Binding.scala / scalajs frontend codebase
