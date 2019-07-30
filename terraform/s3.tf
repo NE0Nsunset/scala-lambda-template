@@ -7,6 +7,7 @@ resource "aws_s3_bucket" "frontend_ui" {
     index_document = "index.html"
     error_document = "error.html"
   }
+  force_destroy = true
 }
 
 data "template_file" "frontend_ui_public_policy" {
@@ -103,20 +104,6 @@ resource "aws_s3_bucket_object" "stylecss" {
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/css/style.css"))}"
-}
-
-resource "aws_s3_bucket_object" "initjs" {
-  bucket = "${aws_s3_bucket.frontend_ui.id}"
-  key = "js/init.js"
-  source = "../lambda-offline/src/main/public/js/init.js"
-  content_type = "text/javascript"
-
-  acl    = "public-read"
-
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
-  etag = "${md5(file("../lambda-offline/src/main/public/js/init.js"))}"
 }
 
 resource "aws_s3_bucket_object" "materializejs" {

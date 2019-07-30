@@ -21,6 +21,10 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   body = "${data.template_file.open_api_yaml_template.rendered}"
   name = "${local.application_identity}_gateway"
   description = "${local.api_description}"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
 }
 
 resource "aws_api_gateway_deployment" "a" {
