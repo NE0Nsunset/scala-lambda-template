@@ -5,6 +5,7 @@ import lambda.LambdaHandler.autowireApiController
 import lambda.LambdaHandler.corsHeaders
 import play.api.libs.json.{JsObject, JsValue, Json}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
+
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
@@ -14,16 +15,19 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import javax.inject.{Inject, Singleton}
-import lambda.models.DynamoItem
+import lambda.models.{DynamoItem, ExampleDynamoItem}
 import lambda.service.DynamoService
 import lambda.service.Module
+
 import scala.io.StdIn
 import com.google.inject._
+import com.typesafe.config.ConfigFactory
 
 object WebServer extends App {
   override def main(args: Array[String]): Unit = {
     implicit val actorSystem = ActorSystem("my-system")
-    val injector = Guice.createInjector(new Module(actorSystem))
+    val config = ConfigFactory.load().getConfig("dynamo")
+    val injector = Guice.createInjector(new Module(actorSystem, config))
     implicit val materializer = ActorMaterializer()
 
     // needed for the future flatMap/onComplete in the end
@@ -32,8 +36,8 @@ object WebServer extends App {
     val host: String = "localhost"
     val port: Int = 9090
 
-    val dynamoService: DynamoService =
-      injector.getInstance(classOf[DynamoService])
+    val dynamoService: DynamoService[ExampleDynamoItem] =
+      injector.getInstance(classOf[DynamoService[ExampleDynamoItem]])
 
     val scalajsScript = scalajs.html
       .scripts("client",
@@ -94,9 +98,9 @@ object WebServer extends App {
 
     println(
       s"Server online at http://$host:${port.toString}\n Press return to stop")
-    StdIn.readLine() // let it run until user presses return
-    bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete(_ => actorSystem.terminate()) // and shutdown when done
+//    StdIn.readLine() // let it run until user presses return
+//    bindingFuture
+//      .flatMap(_.unbind()) // trigger unbinding from the port
+//      .onComplete(_ => actorSystem.terminate()) // and shutdown when done
   }
 }
