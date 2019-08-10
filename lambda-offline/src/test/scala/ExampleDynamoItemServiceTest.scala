@@ -1,28 +1,25 @@
 import lambda.models.ExampleDynamoItem
 import org.scalatest.BeforeAndAfterEach
-
 import scala.collection.JavaConversions._
 
 class ExampleDynamoItemServiceTest extends TestBase with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
-    exampleDynamoService.client.createTableIfNotExists
+    exampleDynamoService.clientHandler.createTableIfNotExists
   }
 
   override def afterEach(): Unit = {
     super.afterEach()
-    exampleDynamoService.client.destroyTable
+    exampleDynamoService.clientHandler.destroyTable
   }
 
   describe("ExampleDynamoItemService Tests") {
     it("Can describe its table") {
-      println(exampleDynamoService.describeTable)
       assert(exampleDynamoService.describeTable.nonEmpty)
     }
 
     it("Should use the alpakaka connector to list tables") {
-      exampleDynamoService.client.listTables map { r =>
-        println(r.toString)
+      exampleDynamoService.clientHandler.listTables map { r =>
         val tableNames = r.getTableNames.toList
         assert(tableNames.contains(tableName))
       }
@@ -36,14 +33,26 @@ class ExampleDynamoItemServiceTest extends TestBase with BeforeAndAfterEach {
       }
     }
 
-    it("Should put an item") {
-      exampleDynamoService.put(
-        ExampleDynamoItem("dsdas",
-                          "description",
-                          new java.util.Date,
-                          new java.util.Date)) map { r =>
-        println(r)
-        assert(true)
+    it("Should be able to insert and retrieve an item") {
+      for {
+        _ <- exampleDynamoService.put(TestObjects.exampleDynamoItem1)
+        getResult <- exampleDynamoService.findItemByCompositeKey(
+          TestObjects.exampleDynamoItem1.partKey,
+          TestObjects.exampleDynamoItem1.rangeKey)
+      } yield {
+        assert(getResult.isInstanceOf[Option[ExampleDynamoItem]])
+        assert(
+          getResult.map(_.name).contains(TestObjects.exampleDynamoItem1.name))
+      }
+    }
+
+    it("Should return none when no item exists for query") {
+      for {
+        getResult <- exampleDynamoService.findItemByCompositeKey(
+          TestObjects.exampleDynamoItem1.partKey,
+          TestObjects.exampleDynamoItem1.rangeKey)
+      } yield {
+        assert(getResult.isEmpty)
       }
     }
 

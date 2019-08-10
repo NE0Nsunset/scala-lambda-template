@@ -36,7 +36,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 trait DynamoClientT {
-  val client: AmazonDynamoDBAsync
+  val awsClient: AmazonDynamoDBAsync
   val alpakkaClient: DynamoClient
   val tableName: String
 
@@ -51,12 +51,14 @@ class DynamoClientImpl @Inject()(config: Config)(
     private implicit val actorSystem: ActorSystem)
     extends DynamoClientT {
 
-  val awsAccessKey = config.getString("dynamo.credentials.access-key-id")
-  val awsSecretKey = config.getString("dynamo.credentials.secret-key-id")
-  val dynamoHost = config.getString("dynamo.host")
-  val dynamoPort = config.getString("dynamo.port")
-  val hostAndPort = s"http://$dynamoHost:$dynamoPort"
-  val dynamoRegion = config.getString("dynamo.region")
+  val awsAccessKey: String =
+    config.getString("dynamo.credentials.access-key-id")
+  val awsSecretKey: String =
+    config.getString("dynamo.credentials.secret-key-id")
+  val dynamoHost: String = config.getString("dynamo.host")
+  val dynamoPort: String = config.getString("dynamo.port")
+  val hostAndPort: String = s"http://$dynamoHost:$dynamoPort"
+  val dynamoRegion: String = config.getString("dynamo.region")
   val tableName: String = config.getString("dynamo.tableName")
 
   lazy val awsCreds = new BasicAWSCredentials(awsAccessKey, awsSecretKey)
@@ -64,7 +66,7 @@ class DynamoClientImpl @Inject()(config: Config)(
 
   implicit val materializer = ActorMaterializer()
 
-  val client: AmazonDynamoDBAsync = {
+  val awsClient: AmazonDynamoDBAsync = {
     AmazonDynamoDBAsyncClientBuilder
       .standard()
       .withEndpointConfiguration(conf)
@@ -82,7 +84,7 @@ class DynamoClientImpl @Inject()(config: Config)(
 
   def createTableIfNotExists(): Unit = {
     try {
-      client.describeTable(tableName)
+      awsClient.describeTable(tableName)
     } catch {
       case e: Exception => {
         createTable
@@ -91,6 +93,28 @@ class DynamoClientImpl @Inject()(config: Config)(
   }
 
   def createTable: TableDescription = {
+    awsClient
+      .createTable(DynamoClientImpl.tableDefinition(tableName))
+      .getTableDescription
+  }
+
+  def destroyTable: Boolean = {
+    awsClient.deleteTable(tableName).toString.nonEmpty
+  }
+
+  def listTables = {
+    val source: Source[ListTablesResult, NotUsed] =
+      DynamoDb
+        .source(new ListTablesRequest())
+        .withAttributes(DynamoAttributes.client(alpakkaClient))
+    source.runWith(Sink.head)
+  }
+
+  createTableIfNotExists()
+}
+
+object DynamoClientImpl {
+  def tableDefinition(tableName: String): CreateTableRequest = {
     import com.amazonaws.auth.BasicAWSCredentials
     val partKeyAttribute: AttributeDefinition =
       new AttributeDefinition("partKey", "S")
@@ -123,29 +147,11 @@ class DynamoClientImpl @Inject()(config: Config)(
         .withKeySchema(secondaryIndexKeySchema)
         .withProjection(secondaryIndexProjection)
         .withProvisionedThroughput(provisionedThroughput)
-    val createTableRequest = new CreateTableRequest()
+    new CreateTableRequest()
       .withTableName(tableName)
       .withAttributeDefinitions(partKeyAttribute, rangeKeyAttribute)
       .withGlobalSecondaryIndexes(globalSecondaryIndex)
       .withProvisionedThroughput(provisionedThroughput)
       .withKeySchema(partKeySchemaElement, rangeKeySchemaElement)
-
-    val createResult = client.createTable(createTableRequest)
-
-    createResult.getTableDescription
   }
-
-  def destroyTable: Boolean = {
-    client.deleteTable(tableName).toString.nonEmpty
-  }
-
-  def listTables = {
-    val source: Source[ListTablesResult, NotUsed] =
-      DynamoDb
-        .source(new ListTablesRequest())
-        .withAttributes(DynamoAttributes.client(alpakkaClient))
-    source.runWith(Sink.head)
-  }
-
-  createTableIfNotExists()
 }
