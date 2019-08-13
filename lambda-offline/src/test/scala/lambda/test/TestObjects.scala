@@ -1,8 +1,10 @@
+package lambda.test
+
 import lambda.models.ExampleDynamoItem
 
 object TestObjects {
   val exampleDynamoItem1 = ExampleDynamoItem(
-    "somerandompartkey",
+    "movie",
     "arandomrangekey",
     new java.util.Date().toLocaleString,
     new java.util.Date().toLocaleString,

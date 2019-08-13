@@ -1,11 +1,9 @@
 package lambda
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import lambda.LambdaHandler.autowireApiController
 import lambda.LambdaHandler.corsHeaders
 import play.api.libs.json.{JsObject, JsValue, Json}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
@@ -16,9 +14,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import javax.inject.{Inject, Singleton}
 import lambda.models.{DynamoItem, ExampleDynamoItem}
-import lambda.service.DynamoService
-import lambda.service.Module
-
+import lambda.service.{DynamoService, Module, MovieService}
 import scala.io.StdIn
 import com.google.inject._
 import com.typesafe.config.ConfigFactory
@@ -26,7 +22,7 @@ import com.typesafe.config.ConfigFactory
 object WebServer extends App {
   override def main(args: Array[String]): Unit = {
     implicit val actorSystem = ActorSystem("my-system")
-    val config = ConfigFactory.load().getConfig("dynamo")
+    val config = ConfigFactory.load()
     val injector = Guice.createInjector(new Module(actorSystem, config))
     implicit val materializer = ActorMaterializer()
 
@@ -36,8 +32,8 @@ object WebServer extends App {
     val host: String = "localhost"
     val port: Int = 9090
 
-    val dynamoService: DynamoService[ExampleDynamoItem] =
-      injector.getInstance(classOf[DynamoService[ExampleDynamoItem]])
+    val autowireServer: AutowireServer =
+      injector.getInstance(classOf[AutowireServer])
 
     val scalajsScript = scalajs.html
       .scripts("client",
@@ -83,11 +79,14 @@ object WebServer extends App {
         post {
           decodeRequest {
             entity(as[String]) { str =>
-              complete(autowireApiController(path, ujson.read(str)).map(x => {
-                println(x)
-                println(corsHeaders.toString())
-                x
-              }))
+              complete(
+                autowireServer
+                  .autowireApiController(path, ujson.read(str))
+                  .map(x => {
+                    println(x)
+                    println(corsHeaders.toString())
+                    x
+                  }))
             }
           }
         }

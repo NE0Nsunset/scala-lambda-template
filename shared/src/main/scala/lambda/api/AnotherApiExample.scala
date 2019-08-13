@@ -1,6 +1,6 @@
 package lambda.api
 
-import lambda.Movie
+import lambda.models.Movie
 
 import scala.concurrent.Future
 

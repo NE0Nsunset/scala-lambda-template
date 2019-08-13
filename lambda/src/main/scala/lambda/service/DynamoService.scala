@@ -12,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.model.{
   GetItemResult,
   PutItemRequest,
   PutItemResult,
+  QueryRequest,
   ScanRequest,
   ScanResult
 }
@@ -20,11 +21,11 @@ import play.api.libs.json.{JsValue, Json, OWrites, Reads, Writes}
 
 import scala.concurrent.{ExecutionContext, Future}
 import lambda.serialization.Serializer._
-
+import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 
 trait DynamoService[T <: DynamoItem] {
-  val prefixName: String
+  //val prefixName: String
   val clientHandler: DynamoClientT
   implicit val executionContext: ExecutionContext
   implicit val materializer: ActorMaterializer
@@ -58,10 +59,7 @@ trait DynamoService[T <: DynamoItem] {
       .withKey(keyMap)
     val source =
       DynamoDb
-        .source(
-          new GetItemRequest()
-            .withTableName(clientHandler.tableName)
-            .withKey(keyMap))
+        .source(getItemRequest)
         .withAttributes(DynamoAttributes.client(clientHandler.alpakkaClient))
 
     source.runWith(Sink.head) map { r =>

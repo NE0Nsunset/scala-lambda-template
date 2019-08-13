@@ -14,6 +14,8 @@ resource "aws_lambda_function" "lambda-autowire-backend" {
     variables {
       ENABLE_CORS = "true"
       ENABLE_DEBUG = "true"
+      ENV = "aws"
+      TABLE_NAME = "${aws_dynamodb_table.lambda-scala-table.name}"
     }
   }
   depends_on = [

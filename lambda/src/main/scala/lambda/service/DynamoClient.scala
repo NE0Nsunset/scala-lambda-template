@@ -60,6 +60,9 @@ class DynamoClientImpl @Inject()(config: Config)(
   val hostAndPort: String = s"http://$dynamoHost:$dynamoPort"
   val dynamoRegion: String = config.getString("dynamo.region")
   val tableName: String = config.getString("dynamo.tableName")
+  val environment: String = config.getString("environment")
+
+  println(config.getString("environment"))
 
   lazy val awsCreds = new BasicAWSCredentials(awsAccessKey, awsSecretKey)
   val conf = new EndpointConfiguration(hostAndPort, dynamoRegion)
@@ -67,11 +70,15 @@ class DynamoClientImpl @Inject()(config: Config)(
   implicit val materializer = ActorMaterializer()
 
   val awsClient: AmazonDynamoDBAsync = {
-    AmazonDynamoDBAsyncClientBuilder
-      .standard()
-      .withEndpointConfiguration(conf)
-      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-      .build()
+    if (environment == "aws")
+      AmazonDynamoDBAsyncClientBuilder
+        .defaultClient()
+    else
+      AmazonDynamoDBAsyncClientBuilder
+        .standard()
+        .withEndpointConfiguration(conf)
+        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .build()
   }
 
   val settings = DynamoSettings(actorSystem)
@@ -80,7 +87,12 @@ class DynamoClientImpl @Inject()(config: Config)(
     .withHost(dynamoHost)
     .withPort(dynamoPort.toInt)
     .withCredentialsProvider(new AWSStaticCredentialsProvider(awsCreds))
-  val alpakkaClient = DynamoClient(settings)
+  val alpakkaClient = {
+    if (environment == "aws")
+      DynamoClient(DynamoSettings(actorSystem))
+    else
+      DynamoClient(settings)
+  }
 
   def createTableIfNotExists(): Unit = {
     try {
