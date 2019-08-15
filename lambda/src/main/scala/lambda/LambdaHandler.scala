@@ -63,10 +63,6 @@ object LambdaHandler {
   def autowireApiHandler(input: InputStream,
                          output: OutputStream,
                          context: Context): Unit = {
-
-    awsLogging.logMessage(config.toString)
-    awsLogging.logMessage(autowireServer.routeList.toString)
-
     val s = scala.io.Source.fromInputStream(input).mkString
     val jsonstr = ujson.read(s)
 

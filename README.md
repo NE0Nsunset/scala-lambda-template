@@ -32,9 +32,9 @@ After starting sbt from the project root, use the following commands to:
                                   This starts a continuous compile, meaning any changes in project folders will recompile and restart the webserver
 
 ## DynamoDB
-TODO write simple DynamoDB service example
-TODO write starter DynamoDB terraform config
-If using the DynamoDB database one can run it locally via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
+This template comes with a terraform configuration for a simple DynamoDB table. A basic example of a Dynamo Service exists in lambda.service.MovieServiceImpl.
+
+If using a DynamoDB database, one can run it locally via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
 Note, make sure a AWS default profile exists in ~/.aws/credentials
 
 After following the install guide:
@@ -68,6 +68,7 @@ Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` envi
 - Lambda(s)
 - S3 bucket for index.html and frontend static files
 - Iam roles
+- Dynamo table
 
 When terraform finishes the output will contain a url for the backend api and frontend. Copy/paste the frontend url into a browser to see your deployment.
 

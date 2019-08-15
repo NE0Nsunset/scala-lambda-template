@@ -9,29 +9,35 @@ import com.amazonaws.services.dynamodbv2.document.{Item, ItemUtils}
 import com.amazonaws.services.dynamodbv2.model.{
   AttributeValue,
   GetItemRequest,
-  GetItemResult,
   PutItemRequest,
   PutItemResult,
-  QueryRequest,
   ScanRequest,
   ScanResult
 }
 import lambda.models.DynamoItem
-import play.api.libs.json.{JsValue, Json, OWrites, Reads, Writes}
-
+import play.api.libs.json.{Json, Reads, Writes}
 import scala.concurrent.{ExecutionContext, Future}
 import lambda.serialization.Serializer._
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 
+/**
+  * Basic DynamoDB interactions that all Dynamo Services
+  * Should extend.
+  * @tparam T
+  */
 trait DynamoService[T <: DynamoItem] {
   //val prefixName: String
   val clientHandler: DynamoClientT
   implicit val executionContext: ExecutionContext
   implicit val materializer: ActorMaterializer
+
+  // Implementors must define their read/write serializers
+  // TODO try and clean this up
   implicit val readsT: Reads[T]
   implicit val writesT: Writes[T]
 
+  // TODO consider implicit conversion
   def attributeValues(t: T): java.util.Map[String, AttributeValue] = {
     val item = Item.fromJSON(Json.stringify(Json.toJson(t)))
     ItemUtils.toAttributeValues(item)

@@ -21,6 +21,9 @@ import lambda.serialization.Serializer._
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * An example DynamoService for storing movies
+  */
 trait MovieService extends DynamoService[MovieItem] {
   def findMoviesByName(name: String): Future[List[MovieItem]]
   def findAllMovies(): Future[List[MovieItem]]
@@ -37,6 +40,7 @@ class MovieServiceImpl @Inject()(config: Config,
   implicit val readsT = movieReads
   implicit val writesT = movieWrites
 
+  // TODO cleanup query generation and execution
   override def findMoviesByName(name: String): Future[List[MovieItem]] = {
     val attributeValues = Map(
       ":partKeyVal" -> new AttributeValue(MovieItem.defaultPartKey),

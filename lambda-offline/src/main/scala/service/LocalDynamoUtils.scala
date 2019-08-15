@@ -13,7 +13,6 @@ import com.amazonaws.services.dynamodbv2.model.{
   ProvisionedThroughput
 }
 import com.typesafe.config.ConfigFactory
-import lambda.ConfigLoader
 import akka.stream.alpakka.dynamodb.scaladsl._
 import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.document.{DynamoDB, Table}

@@ -23,7 +23,6 @@ import com.amazonaws.services.dynamodbv2.model.{
   TableDescription
 }
 import com.amazonaws.services.dynamodbv2.{
-  AmazonDynamoDB,
   AmazonDynamoDBAsync,
   AmazonDynamoDBAsyncClientBuilder
 }
@@ -35,6 +34,11 @@ import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.Future
 
+/**
+  * A client for interacting with DynamoDB
+  * - Implements AWS' Async client for database level operations (create table, list table, etc.)
+  * - and Alpakka Dynamo client for better asynchronous handling of table level operations
+  */
 trait DynamoClientT {
   val awsClient: AmazonDynamoDBAsync
   val alpakkaClient: DynamoClient
@@ -45,7 +49,6 @@ trait DynamoClientT {
   def destroyTable: Boolean
   def listTables: Future[ListTablesResult]
 }
-
 @Singleton
 class DynamoClientImpl @Inject()(config: Config)(
     private implicit val actorSystem: ActorSystem)

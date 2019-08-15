@@ -1,21 +1,18 @@
 package lambda
 
-import com.google.inject.Guice
+import com.google.inject._
 import javax.inject.{Inject, Singleton}
 import lambda.api.{
   AnotherApiExample,
   AnotherApiExampleImpl,
   MovieApiWithDynamo,
-  MovieApiWithDynamoImpl,
   SharedApi,
   SharedApiImpl
 }
 import scala.concurrent.ExecutionContext.Implicits.global
 import lambda.serialization.Picklers._
-import lambda.service.{Module, MovieService}
 import ujson.Value
 import upickle.default._
-
 import scala.concurrent.Future
 
 @Singleton
