@@ -1,3 +1,11 @@
+resource "aws_lambda_layer_version" "base" {
+  layer_name        = "scala-lambda-dependency-layer"
+  filename          = "${data.archive_file.api_lambda_dependency_layer.output_path}"
+  source_code_hash  = "${data.archive_file.api_lambda_dependency_layer.output_base64sha256}"
+
+  compatible_runtimes = ["java8"]
+}
+
 resource "aws_lambda_function" "lambda-autowire-backend" {
   function_name = "${local.application-identity}-autowire-api"
   runtime = "java8"
@@ -9,6 +17,10 @@ resource "aws_lambda_function" "lambda-autowire-backend" {
   role = "${aws_iam_role.lambda_role.arn}"
 
   memory_size = 1024 // TODO needs tuning, default (128) not enough
+
+  timeout = 30 // TODO determine ways to speed up cold starts
+
+  layers = ["${aws_lambda_layer_version.base.arn}"]
 
   environment {
     variables {

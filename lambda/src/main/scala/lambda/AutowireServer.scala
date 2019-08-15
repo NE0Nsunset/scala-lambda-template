@@ -2,7 +2,6 @@ package lambda
 
 import com.google.inject.Guice
 import javax.inject.{Inject, Singleton}
-import lambda.LambdaHandler.logMessage
 import lambda.api.{
   AnotherApiExample,
   AnotherApiExampleImpl,
@@ -20,7 +19,8 @@ import upickle.default._
 import scala.concurrent.Future
 
 @Singleton
-class AutowireServer @Inject()(movieApiWithDynamo: MovieApiWithDynamo)
+class AutowireServer @Inject()(movieApiWithDynamo: MovieApiWithDynamo,
+                               awsLogging: AWSLogging)
     extends autowire.Server[Value,
                             upickle.default.Reader,
                             upickle.default.Writer] {
@@ -42,8 +42,8 @@ class AutowireServer @Inject()(movieApiWithDynamo: MovieApiWithDynamo)
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {
     val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
-    logMessage(strippedPath)
-    logMessage(bodyJsonString.toString())
+    awsLogging.logMessage(strippedPath)
+    awsLogging.logMessage(bodyJsonString.toString())
     val autowireRequest = autowire.Core
       .Request(strippedPath.split("/"),
                ujson

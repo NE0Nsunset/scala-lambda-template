@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.google.inject.Guice
 import com.typesafe.config.ConfigFactory
+import lambda.AWSLogging
 import lambda.models.MovieItem
 import lambda.service.{DynamoService, Module, MovieService, MovieServiceImpl}
 import org.scalatest.AsyncFunSpec
@@ -12,9 +13,10 @@ class TestBase extends AsyncFunSpec {
   val config = ConfigFactory.load("test")
 
   val tableName = config.getString("dynamo.tableName")
-
+  val awsLogging = new AWSLogging {}
   implicit val actorSystem = ActorSystem("my-system")
-  val injector = Guice.createInjector(new Module(actorSystem, config))
+  val injector =
+    Guice.createInjector(new Module(actorSystem, config, awsLogging))
   implicit val materializer = ActorMaterializer()
 
   // needed for the future flatMap/onComplete in the end

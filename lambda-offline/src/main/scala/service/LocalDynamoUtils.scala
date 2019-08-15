@@ -29,8 +29,6 @@ import com.amazonaws.services.dynamodbv2.{
   AmazonDynamoDB,
   AmazonDynamoDBClientBuilder
 }
-import com.gu.scanamo._
-import com.gu.scanamo.syntax._
 
 object LocalDynamoUtil extends App {
   lazy val c = ConfigFactory.load()

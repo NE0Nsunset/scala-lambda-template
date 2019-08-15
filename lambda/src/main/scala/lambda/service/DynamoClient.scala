@@ -51,10 +51,6 @@ class DynamoClientImpl @Inject()(config: Config)(
     private implicit val actorSystem: ActorSystem)
     extends DynamoClientT {
 
-  val awsAccessKey: String =
-    config.getString("dynamo.credentials.access-key-id")
-  val awsSecretKey: String =
-    config.getString("dynamo.credentials.secret-key-id")
   val dynamoHost: String = config.getString("dynamo.host")
   val dynamoPort: String = config.getString("dynamo.port")
   val hostAndPort: String = s"http://$dynamoHost:$dynamoPort"
@@ -62,9 +58,9 @@ class DynamoClientImpl @Inject()(config: Config)(
   val tableName: String = config.getString("dynamo.tableName")
   val environment: String = config.getString("environment")
 
-  println(config.getString("environment"))
+  lazy val dummyAwsCreds =
+    new BasicAWSCredentials("dummyaccesskey", "dummysecretkey")
 
-  lazy val awsCreds = new BasicAWSCredentials(awsAccessKey, awsSecretKey)
   val conf = new EndpointConfiguration(hostAndPort, dynamoRegion)
 
   implicit val materializer = ActorMaterializer()
@@ -73,27 +69,31 @@ class DynamoClientImpl @Inject()(config: Config)(
     if (environment == "aws")
       AmazonDynamoDBAsyncClientBuilder
         .defaultClient()
-    else
+    else {
+
       AmazonDynamoDBAsyncClientBuilder
         .standard()
         .withEndpointConfiguration(conf)
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .withCredentials(new AWSStaticCredentialsProvider(dummyAwsCreds))
         .build()
+    }
   }
-
-  val settings = DynamoSettings(actorSystem)
+  // todo override in application.conf
+  val localSettings = DynamoSettings(actorSystem)
     .withTls(false)
     .withRegion(dynamoRegion)
     .withHost(dynamoHost)
     .withPort(dynamoPort.toInt)
-    .withCredentialsProvider(new AWSStaticCredentialsProvider(awsCreds))
+    .withCredentialsProvider(new AWSStaticCredentialsProvider(dummyAwsCreds))
+
   val alpakkaClient = {
     if (environment == "aws")
       DynamoClient(DynamoSettings(actorSystem))
     else
-      DynamoClient(settings)
+      DynamoClient(localSettings)
   }
 
+  // TODO run in local environment only
   def createTableIfNotExists(): Unit = {
     try {
       awsClient.describeTable(tableName)
@@ -121,8 +121,6 @@ class DynamoClientImpl @Inject()(config: Config)(
         .withAttributes(DynamoAttributes.client(alpakkaClient))
     source.runWith(Sink.head)
   }
-
-  createTableIfNotExists()
 }
 
 object DynamoClientImpl {

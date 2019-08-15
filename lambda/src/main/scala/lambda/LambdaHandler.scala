@@ -5,8 +5,6 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.lambda.runtime.Context
 import play.api.libs.json.{JsObject, Json}
-import ujson.Value
-import upickle._
 import autowire._
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,11 +14,13 @@ import lambda.serialization.Picklers._
 import lambda.service.Module
 import com.google.inject._
 
-object LambdaHandler extends App with AWSLogging {
+object LambdaHandler {
+  lazy val config = ConfigFactory.load()
   implicit val actorSystem = ActorSystem("my-system")
-  val config = ConfigFactory.load()
-
-  implicit val materializer = ActorMaterializer()
+  lazy val awsLogging = new AWSLogging {}
+  lazy val injector =
+    Guice.createInjector(new Module(actorSystem, config, awsLogging))
+  implicit val materializer = ActorMaterializer()(actorSystem)
 
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = actorSystem.dispatcher
@@ -32,6 +32,16 @@ object LambdaHandler extends App with AWSLogging {
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
     "access-control-allow-origin" -> "*"
   )
+
+  lazy val autowireServer: AutowireServer =
+    injector.getInstance(classOf[AutowireServer])
+
+  /*
+   * Exists to test jars like they would be run from AWS
+   */
+  def main(args: Array[String]): Unit = {
+    println(autowireServer.routeList.toString)
+  }
 
   def response(v: String,
                statusCode: Int = 200,
@@ -53,10 +63,9 @@ object LambdaHandler extends App with AWSLogging {
   def autowireApiHandler(input: InputStream,
                          output: OutputStream,
                          context: Context): Unit = {
-    val injector = Guice.createInjector(new Module(actorSystem, config))
-    val autowireServer: AutowireServer =
-      injector.getInstance(classOf[AutowireServer])
-    logMessage(autowireServer.routeList.toString)
+
+    awsLogging.logMessage(config.toString)
+    awsLogging.logMessage(autowireServer.routeList.toString)
 
     val s = scala.io.Source.fromInputStream(input).mkString
     val jsonstr = ujson.read(s)
@@ -66,8 +75,8 @@ object LambdaHandler extends App with AWSLogging {
       .toString()
       .replaceAll("^\"|\"$", "")
 
-    logMessage(path.toString)
-    logMessage(bodyString)
+    awsLogging.logMessage(path.toString)
+    awsLogging.logMessage(bodyString)
 
     val bodyJson = ujson.read(bodyString)
     val autowireFuture = autowireServer.autowireApiController(path, bodyJson) map {
