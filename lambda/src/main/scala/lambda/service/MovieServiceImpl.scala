@@ -13,7 +13,6 @@ import com.amazonaws.services.dynamodbv2.model.{
   QueryRequest
 }
 import com.typesafe.config.Config
-import javax.inject.{Inject, Singleton}
 import lambda.models.{ExampleDynamoItem, MovieItem}
 import play.api.libs.json.{JsValue, Json}
 import lambda.serialization.Serializer._
@@ -29,9 +28,7 @@ trait MovieService extends DynamoService[MovieItem] {
   def findAllMovies(): Future[List[MovieItem]]
 }
 
-@Singleton
-class MovieServiceImpl @Inject()(config: Config,
-                                 val clientHandler: DynamoClientT)(
+class MovieServiceImpl(config: Config, val clientHandler: DynamoClientT)(
     private implicit val actorSystem: ActorSystem)
     extends MovieService {
   implicit val materializer: ActorMaterializer = ActorMaterializer()

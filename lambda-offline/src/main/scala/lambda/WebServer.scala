@@ -3,6 +3,7 @@ package lambda
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
+
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
@@ -11,21 +12,34 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import javax.inject.{Inject, Singleton}
 import lambda.models.{DynamoItem, ExampleDynamoItem}
-import lambda.service.{DynamoService, Module, MovieService}
+import lambda.service.{
+  DynamoClientImpl,
+  DynamoClientT,
+  DynamoService,
+  MovieService,
+  MovieServiceImpl
+}
+
 import scala.io.StdIn
 import com.google.inject._
 import com.typesafe.config.ConfigFactory
+import lambda.LambdaHandler.{actorSystem, awsLogging, config}
+import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
 
 object WebServer extends App {
   lazy val actorSystem = ActorSystem("my-system")
   lazy val config = ConfigFactory.load()
 
   lazy val awsLogging = new AWSLogging {}
-  lazy val injector =
-    Guice.createInjector(new Module(actorSystem, config, awsLogging))
-
+  lazy val dynamoClient: DynamoClientT =
+    new DynamoClientImpl(config)(actorSystem)
+  lazy val movieService: MovieService =
+    new MovieServiceImpl(config, dynamoClient)(actorSystem)
+  lazy val movieApiWithDynamo: MovieApiWithDynamo =
+    new MovieApiWithDynamoImpl(movieService)(actorSystem)
+  lazy val autowireServer: AutowireServer =
+    new AutowireServer(movieApiWithDynamo, awsLogging)
   println(config.toString)
 
   implicit val materializer = ActorMaterializer()(actorSystem)
@@ -34,9 +48,6 @@ object WebServer extends App {
 
   val host: String = "localhost"
   val port: Int = 9090
-
-  val autowireServer: AutowireServer =
-    injector.getInstance(classOf[AutowireServer])
 
   val scalajsScript = scalajs.html
     .scripts("client",

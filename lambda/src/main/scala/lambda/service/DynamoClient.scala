@@ -30,7 +30,6 @@ import akka.stream.alpakka.dynamodb.AwsOp._
 import akka.stream.alpakka.dynamodb.scaladsl._
 import akka.stream.scaladsl.{Sink, Source}
 import com.typesafe.config.Config
-import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.Future
 
@@ -49,8 +48,8 @@ trait DynamoClientT {
   def destroyTable: Boolean
   def listTables: Future[ListTablesResult]
 }
-@Singleton
-class DynamoClientImpl @Inject()(config: Config)(
+
+class DynamoClientImpl(config: Config)(
     private implicit val actorSystem: ActorSystem)
     extends DynamoClientT {
 

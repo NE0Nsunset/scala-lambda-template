@@ -1,7 +1,4 @@
 package lambda
-
-import com.google.inject._
-import javax.inject.{Inject, Singleton}
 import lambda.api.{
   AnotherApiExample,
   AnotherApiExampleImpl,
@@ -15,9 +12,8 @@ import ujson.Value
 import upickle.default._
 import scala.concurrent.Future
 
-@Singleton
-class AutowireServer @Inject()(movieApiWithDynamo: MovieApiWithDynamo,
-                               awsLogging: AWSLogging)
+class AutowireServer(movieApiWithDynamo: MovieApiWithDynamo,
+                     awsLogging: AWSLogging)
     extends autowire.Server[Value,
                             upickle.default.Reader,
                             upickle.default.Writer] {

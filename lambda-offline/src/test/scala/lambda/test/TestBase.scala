@@ -4,9 +4,17 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.google.inject.Guice
 import com.typesafe.config.ConfigFactory
-import lambda.AWSLogging
+import lambda.{AWSLogging, AutowireServer}
+import lambda.LambdaHandler.{actorSystem, awsLogging, config}
+import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
 import lambda.models.MovieItem
-import lambda.service.{DynamoService, Module, MovieService, MovieServiceImpl}
+import lambda.service.{
+  DynamoClientImpl,
+  DynamoClientT,
+  DynamoService,
+  MovieService,
+  MovieServiceImpl
+}
 import org.scalatest.AsyncFunSpec
 
 class TestBase extends AsyncFunSpec {
@@ -15,13 +23,18 @@ class TestBase extends AsyncFunSpec {
   val tableName = config.getString("dynamo.tableName")
   val awsLogging = new AWSLogging {}
   implicit val actorSystem = ActorSystem("my-system")
-  val injector =
-    Guice.createInjector(new Module(actorSystem, config, awsLogging))
+  lazy val dynamoClient: DynamoClientT =
+    new DynamoClientImpl(config)(actorSystem)
+  lazy val movieService: MovieService =
+    new MovieServiceImpl(config, dynamoClient)
+  lazy val movieApiWithDynamo: MovieApiWithDynamo = new MovieApiWithDynamoImpl(
+    movieService)
+  lazy val autowireServer: AutowireServer =
+    new AutowireServer(movieApiWithDynamo, awsLogging)
   implicit val materializer = ActorMaterializer()
 
   // needed for the future flatMap/onComplete in the end
   //implicit val executionContext = actorSystem.dispatcher
-  val movieDynamoService: MovieService =
-    injector.getInstance(classOf[MovieServiceImpl])
+  val movieDynamoService: MovieService = movieService
 
 }

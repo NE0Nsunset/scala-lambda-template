@@ -1,14 +1,12 @@
 package lambda.api
 
 import akka.actor.ActorSystem
-import javax.inject.{Inject, Singleton}
 import lambda.models.MovieItem
 import lambda.service.MovieService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
-class MovieApiWithDynamoImpl @Inject()(movieService: MovieService)(
+class MovieApiWithDynamoImpl(movieService: MovieService)(
     private implicit val actorSystem: ActorSystem)
     extends MovieApiWithDynamo {
   implicit val executionContext: ExecutionContext =

@@ -7,19 +7,22 @@ import com.amazonaws.services.lambda.runtime.Context
 import play.api.libs.json.{JsObject, Json}
 import autowire._
 import com.typesafe.config.ConfigFactory
+import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
-import lambda.service.Module
-import com.google.inject._
+import lambda.service.{
+  DynamoClientImpl,
+  DynamoClientT,
+  MovieService,
+  MovieServiceImpl
+}
 
 object LambdaHandler {
   lazy val config = ConfigFactory.load()
   implicit val actorSystem = ActorSystem("my-system")
   lazy val awsLogging = new AWSLogging {}
-  lazy val injector =
-    Guice.createInjector(new Module(actorSystem, config, awsLogging))
   implicit val materializer = ActorMaterializer()(actorSystem)
 
   // needed for the future flatMap/onComplete in the end
@@ -33,8 +36,14 @@ object LambdaHandler {
     "access-control-allow-origin" -> "*"
   )
 
+  lazy val dynamoClient: DynamoClientT =
+    new DynamoClientImpl(config)(actorSystem)
+  lazy val movieService: MovieService =
+    new MovieServiceImpl(config, dynamoClient)(actorSystem)
+  lazy val movieApiWithDynamo: MovieApiWithDynamo =
+    new MovieApiWithDynamoImpl(movieService)(actorSystem)
   lazy val autowireServer: AutowireServer =
-    injector.getInstance(classOf[AutowireServer])
+    new AutowireServer(movieApiWithDynamo, awsLogging)
 
   /*
    * Exists to test jars like they would be run from AWS

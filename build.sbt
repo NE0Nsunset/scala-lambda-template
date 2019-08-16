@@ -13,7 +13,7 @@ val serverDeps = Seq(
     //"software.amazon.awssdk" % "aws-sdk-java" % "2.4.4",
     "com.typesafe.play" %% "play-json" % "2.6.9",
     "com.lihaoyi" %% "autowire" % "0.2.6",
-    "net.codingwell" %% "scala-guice" % "4.2.6",
+    //"net.codingwell" %% "scala-guice" % "4.2.6",
     "com.typesafe" % "config" % "1.3.4",
     "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % "1.1.0",
     "org.scalactic" %% "scalactic" % "3.0.8",
