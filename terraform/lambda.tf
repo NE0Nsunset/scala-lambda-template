@@ -16,7 +16,7 @@ resource "aws_lambda_function" "lambda-autowire-backend" {
   handler = "lambda.LambdaHandler::autowireApiHandler"
   role = "${aws_iam_role.lambda_role.arn}"
 
-  memory_size = 1024 // TODO needs tuning, default (128) not enough
+  memory_size = 1536 // At least 1536 for Java runtimes signitificantly improves cold start time
 
   timeout = 30 // TODO determine ways to speed up cold starts
 
