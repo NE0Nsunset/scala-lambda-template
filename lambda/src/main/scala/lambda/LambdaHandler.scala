@@ -1,15 +1,12 @@
 package lambda
 
 import java.io.{InputStream, OutputStream}
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import com.amazonaws.services.lambda.runtime.Context
 import play.api.libs.json.{JsObject, Json}
 import autowire._
 import com.typesafe.config.ConfigFactory
 import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
 import lambda.service.{
@@ -18,15 +15,11 @@ import lambda.service.{
   MovieService,
   MovieServiceImpl
 }
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object LambdaHandler {
-  lazy val config = ConfigFactory.load()
-  implicit val actorSystem = ActorSystem("my-system")
-  lazy val awsLogging = new AWSLogging {}
-  implicit val materializer = ActorMaterializer()(actorSystem)
-
-  // needed for the future flatMap/onComplete in the end
-  implicit val executionContext = actorSystem.dispatcher
+  val config = ConfigFactory.load()
+  val awsLogging = new AWSLogging {}
 
   lazy val corsEnabled = System.getenv("ENABLE_CORS") == "true"
 
@@ -37,11 +30,11 @@ object LambdaHandler {
   )
 
   lazy val dynamoClient: DynamoClientT =
-    new DynamoClientImpl(config)(actorSystem)
+    new DynamoClientImpl(config)
   lazy val movieService: MovieService =
-    new MovieServiceImpl(config, dynamoClient)(actorSystem)
+    new MovieServiceImpl(config, dynamoClient)
   lazy val movieApiWithDynamo: MovieApiWithDynamo =
-    new MovieApiWithDynamoImpl(movieService)(actorSystem)
+    new MovieApiWithDynamoImpl(movieService)
   lazy val autowireServer: AutowireServer =
     new AutowireServer(movieApiWithDynamo, awsLogging)
 
@@ -62,16 +55,22 @@ object LambdaHandler {
       "headers" -> headers
     )
   }
-
+//
+//  def helloWorld(input: InputStream,
+//                 output: OutputStream,
+//                 context: Context): Unit = {
+//    val s = "Hello, World!"
+//    println(autowireServer.routeList.toString)
+//    output.write(s.getBytes("UTF-8"))
+//  }
+//
   /**
     * Used with a single AWS lambda configured via AWS Api Gateway to consume all sub-paths of /api
     * @param input
     * @param output
     * @param context
     */
-  def autowireApiHandler(input: InputStream,
-                         output: OutputStream,
-                         context: Context): Unit = {
+  def autowireApiHandler(input: InputStream, output: OutputStream): Unit = {
     val s = scala.io.Source.fromInputStream(input).mkString
     val jsonstr = ujson.read(s)
 

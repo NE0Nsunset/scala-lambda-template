@@ -23,7 +23,6 @@ class AutowireServer(movieApiWithDynamo: MovieApiWithDynamo,
 
   def read[Result: upickle.default.Reader](p: Value) = {
     val r = upickle.default.read[Result](p)
-    println(r)
     r
   }
 
@@ -34,6 +33,7 @@ class AutowireServer(movieApiWithDynamo: MovieApiWithDynamo,
 
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {
+    println(routeList.toString)
     val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
     awsLogging.logMessage(strippedPath)
     awsLogging.logMessage(bodyJsonString.toString())
@@ -47,7 +47,8 @@ class AutowireServer(movieApiWithDynamo: MovieApiWithDynamo,
 
     val route = this.routeList
       .find(r => r.isDefinedAt(autowireRequest))
-      .getOrElse(throw new Exception(s"route not defined for path: $path"))
+      .getOrElse(throw new Exception(
+        s"route not defined for path: $path, ${autowireRequest.args} ${autowireRequest.path}"))
 
     val router = route(autowireRequest)
 

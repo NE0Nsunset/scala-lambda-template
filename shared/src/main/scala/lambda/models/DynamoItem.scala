@@ -1,5 +1,7 @@
 package lambda.models
 
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+
 /**
   * Implementors will need to come up with their own strategy
   * for how they define their partKey and rangeKey (aka sortKey)
@@ -22,4 +24,5 @@ trait DynamoItem {
 
   val createdAt: String;
   val lastUpdate: String;
+  def itemToAttributeMap: java.util.Map[String, AttributeValue]
 }

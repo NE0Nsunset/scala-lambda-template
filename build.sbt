@@ -7,17 +7,11 @@ val airframeVersion = "0.45"
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint") // AWS only supports Java 8
 
 val serverDeps = Seq(
-    "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-    "com.amazonaws" % "aws-lambda-java-events" % "2.2.6",
-    "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.603",
-    //"software.amazon.awssdk" % "aws-sdk-java" % "2.4.4",
+    "software.amazon.awssdk" % "dynamodb" % "2.7.26",
     "com.typesafe.play" %% "play-json" % "2.6.9",
     "com.lihaoyi" %% "autowire" % "0.2.6",
-    //"net.codingwell" %% "scala-guice" % "4.2.6",
     "com.typesafe" % "config" % "1.3.4",
-    "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % "1.1.0",
-    "org.scalactic" %% "scalactic" % "3.0.8",
-    "org.scalatest" %% "scalatest" % "3.0.8" % "test"
+    "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
 )
 
 lazy val root = Project(id = "lambda-scala-function-root",
@@ -32,8 +26,8 @@ lazy val lambda = (project in file("lambda")).
     name := "lambda",
     version := "1.0",
     scalaVersion := scalaV,
-    retrieveManaged := true,
     libraryDependencies ++= serverDeps,
+    retrieveManaged := true,
     mainClass in assembly := Some("lambda.LambdaHandler"),
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false, includeDependency = false),
     assemblyMergeStrategy in assembly := {
@@ -56,11 +50,12 @@ lazy val lambdaOffline = (project in file("lambda-offline")).settings(
     name := "lambda-offline",
     version := "1.0",
     scalaVersion := scalaV,
-    retrieveManaged := true,
     libraryDependencies ++= serverDeps ++ Seq(
         "com.typesafe.akka" %% "akka-http"   % "10.1.9",
         "com.typesafe.akka" %% "akka-stream" % "2.5.23",
-        "com.vmunier" %% "scalajs-scripts" % "1.1.3"
+        "com.vmunier" %% "scalajs-scripts" % "1.1.3",
+        "org.scalactic" %% "scalactic" % "3.0.8",
+        "org.scalatest" %% "scalatest" % "3.0.8" % "test"
     ),
     mainClass in Compile := Some("lambda.WebServer")
 ).enablePlugins(SbtWeb).dependsOn(lambda, sharedJvm).aggregate(sharedJvm)
@@ -77,6 +72,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
       "com.beachape" %%% "enumeratum" % "1.5.12",
       "com.lihaoyi" %% "upickle" % "0.7.5",
       "org.scalatest" %% "scalatest" % "3.0.3" % "test",
+      "software.amazon.awssdk" % "dynamodb" % "2.7.26",
   )).disablePlugins(RevolverPlugin)
 
 

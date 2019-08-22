@@ -2,32 +2,8 @@ package service
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
-import akka.stream.alpakka.dynamodb.scaladsl.DynamoDb
-import com.amazonaws.services.dynamodbv2.model.{
-  AttributeDefinition,
-  CreateTableRequest,
-  GlobalSecondaryIndex,
-  KeySchemaElement,
-  KeyType,
-  Projection,
-  ProvisionedThroughput
-}
-import com.typesafe.config.ConfigFactory
-import akka.stream.alpakka.dynamodb.scaladsl._
-import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.document.{DynamoDB, Table}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import akka.stream.alpakka.dynamodb.AwsOp._
-import akka.stream.alpakka.dynamodb.{DynamoClient, DynamoSettings}
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.dynamodbv2.{
-  AmazonDynamoDB,
-  AmazonDynamoDBClientBuilder
-}
+import com.typesafe.config.ConfigFactory
 
 object LocalDynamoUtil extends App {
   lazy val c = ConfigFactory.load()
@@ -38,85 +14,85 @@ object LocalDynamoUtil extends App {
 
   implicit val materializer: Materializer = ActorMaterializer()
 
-  val settings = DynamoSettings(system)
-  lazy val awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id")
-
-  lazy val client: AmazonDynamoDB = {
-    val conf = new EndpointConfiguration("http://localhost:8000", "us-east-1")
-    AmazonDynamoDBClientBuilder
-      .standard()
-      .withEndpointConfiguration(conf)
-      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-      .build()
-  }
-
-  override def main(args: Array[String]): Unit = {
-    println(getOrCreateTable(tableName).toString)
-  }
-
-  def getOrCreateTable(tableName: String): TableDescription = {
-    try {
-      println(tableName)
-      client.describeTable(tableName).getTable
-    } catch {
-      case e: ResourceNotFoundException => {
-        println(e)
-        println(s"Creating table $tableName")
-        createTable(tableName)
-      }
-    }
-  }
-  def getTable(tableName: String): String = {
-    client.describeTable(tableName).toString
-  }
-
-  def destroyTable(tableName: String): Boolean = {
-    client.deleteTable(tableName).toString.nonEmpty
-  }
-
-  def createTable(tableName: String): TableDescription = {
-    import com.amazonaws.auth.BasicAWSCredentials
-    val partKeyAttribute: AttributeDefinition =
-      new AttributeDefinition("partKey", "S")
-    val rangeKeyAttribute: AttributeDefinition =
-      new AttributeDefinition("rangeKey", "S")
-    val lastUpdateDate: AttributeDefinition =
-      new AttributeDefinition("lastUpdate", "S")
-
-    val partKeySchemaElement = new KeySchemaElement()
-      .withAttributeName(partKeyAttribute.getAttributeName)
-      .withKeyType(KeyType.HASH)
-
-    val rangeKeySchemaElement = new KeySchemaElement()
-      .withAttributeName(rangeKeyAttribute.getAttributeName)
-      .withKeyType(KeyType.RANGE)
-
-    val secondaryIndexKeySchema =
-      new KeySchemaElement()
-        .withAttributeName(rangeKeyAttribute.getAttributeName)
-        .withKeyType(KeyType.HASH)
-
-    val secondaryIndexProjection = new Projection().withProjectionType("ALL")
-    val provisionedThroughput = new ProvisionedThroughput()
-      .withReadCapacityUnits(5l)
-      .withWriteCapacityUnits(5l)
-
-    val globalSecondaryIndex =
-      new GlobalSecondaryIndex()
-        .withIndexName("rangeIndex")
-        .withKeySchema(secondaryIndexKeySchema)
-        .withProjection(secondaryIndexProjection)
-        .withProvisionedThroughput(provisionedThroughput)
-    val createTableRequest = new CreateTableRequest()
-      .withTableName(tableName)
-      .withAttributeDefinitions(partKeyAttribute, rangeKeyAttribute)
-      .withGlobalSecondaryIndexes(globalSecondaryIndex)
-      .withProvisionedThroughput(provisionedThroughput)
-      .withKeySchema(partKeySchemaElement, rangeKeySchemaElement)
-    println(createTableRequest.toString)
-
-    val createResult = client.createTable(createTableRequest)
-
-    createResult.getTableDescription
-  }
+//  //val settings = DynamoSettings(system)
+//  lazy val awsCreds = new BasicAWSCredentials("access_key_id", "secret_key_id")
+//
+//  lazy val client: AmazonDynamoDB = {
+//    val conf = new EndpointConfiguration("http://localhost:8000", "us-east-1")
+//    AmazonDynamoDBClientBuilder
+//      .standard()
+//      .withEndpointConfiguration(conf)
+//      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+//      .build()
+//  }
+//
+//  override def main(args: Array[String]): Unit = {
+//    println(getOrCreateTable(tableName).toString)
+//  }
+//
+//  def getOrCreateTable(tableName: String): TableDescription = {
+//    try {
+//      println(tableName)
+//      client.describeTable(tableName).getTable
+//    } catch {
+//      case e: ResourceNotFoundException => {
+//        println(e)
+//        println(s"Creating table $tableName")
+//        createTable(tableName)
+//      }
+//    }
+//  }
+//  def getTable(tableName: String): String = {
+//    client.describeTable(tableName).toString
+//  }
+//
+//  def destroyTable(tableName: String): Boolean = {
+//    client.deleteTable(tableName).toString.nonEmpty
+//  }
+//
+//  def createTable(tableName: String): TableDescription = {
+//    import com.amazonaws.auth.BasicAWSCredentials
+//    val partKeyAttribute: AttributeDefinition =
+//      new AttributeDefinition("partKey", "S")
+//    val rangeKeyAttribute: AttributeDefinition =
+//      new AttributeDefinition("rangeKey", "S")
+//    val lastUpdateDate: AttributeDefinition =
+//      new AttributeDefinition("lastUpdate", "S")
+//
+//    val partKeySchemaElement = new KeySchemaElement()
+//      .withAttributeName(partKeyAttribute.getAttributeName)
+//      .withKeyType(KeyType.HASH)
+//
+//    val rangeKeySchemaElement = new KeySchemaElement()
+//      .withAttributeName(rangeKeyAttribute.getAttributeName)
+//      .withKeyType(KeyType.RANGE)
+//
+//    val secondaryIndexKeySchema =
+//      new KeySchemaElement()
+//        .withAttributeName(rangeKeyAttribute.getAttributeName)
+//        .withKeyType(KeyType.HASH)
+//
+//    val secondaryIndexProjection = new Projection().withProjectionType("ALL")
+//    val provisionedThroughput = new ProvisionedThroughput()
+//      .withReadCapacityUnits(5l)
+//      .withWriteCapacityUnits(5l)
+//
+//    val globalSecondaryIndex =
+//      new GlobalSecondaryIndex()
+//        .withIndexName("rangeIndex")
+//        .withKeySchema(secondaryIndexKeySchema)
+//        .withProjection(secondaryIndexProjection)
+//        .withProvisionedThroughput(provisionedThroughput)
+//    val createTableRequest = new CreateTableRequest()
+//      .withTableName(tableName)
+//      .withAttributeDefinitions(partKeyAttribute, rangeKeyAttribute)
+//      .withGlobalSecondaryIndexes(globalSecondaryIndex)
+//      .withProvisionedThroughput(provisionedThroughput)
+//      .withKeySchema(partKeySchemaElement, rangeKeySchemaElement)
+//    println(createTableRequest.toString)
+//
+//    val createResult = client.createTable(createTableRequest)
+//
+//    createResult.getTableDescription
+//  }
 }

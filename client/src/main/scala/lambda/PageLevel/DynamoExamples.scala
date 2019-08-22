@@ -22,12 +22,8 @@ class DynamoExamples extends PageComponent {
     } yield {
       moviesLoaded.value ++= movies
     }
+    Future {}
   }
-
-  val somethingElse: Future[Unit] = AjaxClient[MovieApiWithDynamo]
-    .findByName("basbbdsak")
-    .call()
-    .map(x => println(x.toString))
 
   def handleSubmit(e: Event) = {
     e.preventDefault()

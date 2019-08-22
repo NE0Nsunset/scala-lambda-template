@@ -1,6 +1,8 @@
 package lambda.models
 
 import java.util.Date
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import scala.collection.JavaConverters._
 
 case class Movie(title: String,
                  year: Int,
@@ -58,7 +60,20 @@ case class MovieItem(partKey: String,
                      year: Int,
                      description: String,
                      thumbnail: String)
-    extends DynamoItem
+    extends DynamoItem {
+  def itemToAttributeMap: java.util.Map[String, AttributeValue] = {
+    Map(
+      "partKey" -> AttributeValue.builder().s(partKey).build(),
+      "rangeKey" -> AttributeValue.builder().s(rangeKey).build(),
+      "createdAt" -> AttributeValue.builder().s(createdAt).build(),
+      "lastUpdate" -> AttributeValue.builder().s(lastUpdate).build(),
+      "title" -> AttributeValue.builder().s(title).build(),
+      "year" -> AttributeValue.builder().n(year.toString).build(),
+      "description" -> AttributeValue.builder().s(description).build(),
+      "thumbnail" -> AttributeValue.builder().s(thumbnail).build(),
+    ).asJava
+  }
+}
 
 object MovieItem {
   val defaultPartKey: String = "movie"
@@ -88,6 +103,19 @@ object MovieItem {
       movie.year,
       movie.description,
       movie.thumbnail
+    )
+  }
+
+  def fromAttributeMap(av: Map[String, AttributeValue]): MovieItem = {
+    MovieItem(
+      av("partKey").s(),
+      av("rangeKey").s(),
+      av("createdAt").s(),
+      av("lastUpdate").s(),
+      av("title").s(),
+      av("year").n().toInt,
+      av("description").s(),
+      av("thumbnail").s(),
     )
   }
 }

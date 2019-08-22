@@ -3,7 +3,6 @@ package lambda
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
@@ -12,7 +11,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import lambda.models.{DynamoItem, ExampleDynamoItem}
+import lambda.models.{DynamoItem}
 import lambda.service.{
   DynamoClientImpl,
   DynamoClientT,
@@ -20,34 +19,30 @@ import lambda.service.{
   MovieService,
   MovieServiceImpl
 }
-
 import scala.io.StdIn
-import com.google.inject._
 import com.typesafe.config.ConfigFactory
-import lambda.LambdaHandler.{actorSystem, awsLogging, config}
+import lambda.LambdaHandler.{awsLogging, config}
 import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
 
 object WebServer extends App {
-  lazy val actorSystem = ActorSystem("my-system")
-  lazy val config = ConfigFactory.load()
+  implicit val actorSystem = ActorSystem("my-system")
+  implicit val materializer = ActorMaterializer()(actorSystem)
+  implicit val executionContext = actorSystem.dispatcher
+
+  val config = ConfigFactory.load()
+
+  val host: String = config.getString("akka-http.host")
+  val port: Int = config.getInt("akka-http.port")
 
   lazy val awsLogging = new AWSLogging {}
   lazy val dynamoClient: DynamoClientT =
-    new DynamoClientImpl(config)(actorSystem)
+    new LocalDynamoClient(config)
   lazy val movieService: MovieService =
-    new MovieServiceImpl(config, dynamoClient)(actorSystem)
+    new MovieServiceImpl(config, dynamoClient)
   lazy val movieApiWithDynamo: MovieApiWithDynamo =
-    new MovieApiWithDynamoImpl(movieService)(actorSystem)
+    new MovieApiWithDynamoImpl(movieService)
   lazy val autowireServer: AutowireServer =
     new AutowireServer(movieApiWithDynamo, awsLogging)
-  println(config.toString)
-
-  implicit val materializer = ActorMaterializer()(actorSystem)
-  // needed for the future flatMap/onComplete in the end
-  implicit val executionContext = actorSystem.dispatcher
-
-  val host: String = "localhost"
-  val port: Int = 9090
 
   val scalajsScript = scalajs.html
     .scripts("client",
@@ -106,14 +101,12 @@ object WebServer extends App {
     } ~ pathPrefix("static") {
       getFromResourceDirectory("public")
     }
-  implicit val actorsys = actorSystem
   val bindingFuture = Http().bindAndHandle(route, host, port)
 
   println(
     s"Server online at http://$host:${port.toString}\n Press return to stop")
-//    StdIn.readLine() // let it run until user presses return
-//    bindingFuture
-//      .flatMap(_.unbind()) // trigger unbinding from the port
-//      .onComplete(_ => actorSystem.terminate()) // and shutdown when done
-
+  //    StdIn.readLine() // let it run until user presses return
+  //    bindingFuture
+  //      .flatMap(_.unbind()) // trigger unbinding from the port
+  //      .onComplete(_ => actorSystem.terminate()) // and shutdown when done
 }
