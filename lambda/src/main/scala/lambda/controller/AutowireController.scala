@@ -1,35 +1,15 @@
-package lambda
-import lambda.api.{
-  AnotherApiExample,
-  AnotherApiExampleImpl,
-  MovieApiWithDynamo,
-  SharedApi,
-  SharedApiImpl
-}
+package lambda.controller
+
+import lambda.AWSLogging
+import ujson.Value
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import lambda.serialization.Picklers._
 import ujson.Value
 import upickle.default._
 import scala.concurrent.Future
 
-class AutowireServer(movieApiWithDynamo: MovieApiWithDynamo,
-                     awsLogging: AWSLogging)
-    extends autowire.Server[Value,
-                            upickle.default.Reader,
-                            upickle.default.Writer] {
-
-  def write[Result: upickle.default.Writer](r: Result) =
-    upickle.default.writeJs(r)
-
-  def read[Result: upickle.default.Reader](p: Value) = {
-    val r = upickle.default.read[Result](p)
-    r
-  }
-
-  // Bind Api Contracts to their implementations here
-  val routeList = List(this.route[SharedApi](SharedApiImpl),
-                       this.route[AnotherApiExample](AnotherApiExampleImpl),
-                       this.route[MovieApiWithDynamo](movieApiWithDynamo))
+class AutowireController(awsLogging: AWSLogging,
+                         val routeList: List[AutowireServer#Router]) {
 
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {

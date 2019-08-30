@@ -2,15 +2,11 @@ package lambda.service
 
 import com.typesafe.config.Config
 import lambda.models.{DynamoItem, MovieItem}
-import play.api.libs.json.{JsValue, Json}
 import lambda.serialization.Serializer._
 import software.amazon.awssdk.services.dynamodb.model.{
   AttributeValue,
-  PutItemRequest,
-  PutItemResponse,
   QueryRequest
 }
-
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
 import scala.concurrent.{ExecutionContext, Future}

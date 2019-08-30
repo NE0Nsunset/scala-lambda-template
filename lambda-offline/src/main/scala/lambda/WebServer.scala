@@ -1,48 +1,29 @@
 package lambda
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import play.api.libs.json.{JsObject, JsValue, Json}
-import akka.http.scaladsl.unmarshalling.Unmarshaller
-import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration.Duration
-import lambda.serialization.Picklers._
+import play.api.libs.json.Json
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import lambda.models.{DynamoItem}
-import lambda.service.{
-  DynamoClientImpl,
-  DynamoClientT,
-  DynamoService,
-  MovieService,
-  MovieServiceImpl
-}
-import scala.io.StdIn
 import com.typesafe.config.ConfigFactory
-import lambda.LambdaHandler.{awsLogging, config}
-import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
 
-object WebServer extends App {
+trait LocalDependencies {
+  this: LambdaDependencies =>
+  override val config = ConfigFactory.load("local")
+
   implicit val actorSystem = ActorSystem("my-system")
   implicit val materializer = ActorMaterializer()(actorSystem)
   implicit val executionContext = actorSystem.dispatcher
 
-  val config = ConfigFactory.load()
+  val dynamoClient = new LocalDynamoClient(config)
+}
+
+object WebServer extends App with LambdaDependencies with LocalDependencies {
 
   val host: String = config.getString("akka-http.host")
   val port: Int = config.getInt("akka-http.port")
-
-  lazy val awsLogging = new AWSLogging {}
-  lazy val dynamoClient: DynamoClientT =
-    new LocalDynamoClient(config)
-  lazy val movieService: MovieService =
-    new MovieServiceImpl(config, dynamoClient)
-  lazy val movieApiWithDynamo: MovieApiWithDynamo =
-    new MovieApiWithDynamoImpl(movieService)
-  lazy val autowireServer: AutowireServer =
-    new AutowireServer(movieApiWithDynamo, awsLogging)
 
   val scalajsScript = scalajs.html
     .scripts("client",
@@ -89,7 +70,7 @@ object WebServer extends App {
         decodeRequest {
           entity(as[String]) { str =>
             complete(
-              autowireServer
+              autowireController
                 .autowireApiController(path, ujson.read(str))
                 .map(x => {
                   println(x)

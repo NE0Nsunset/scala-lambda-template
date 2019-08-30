@@ -12,6 +12,7 @@ val serverDeps = Seq(
     "com.lihaoyi" %% "autowire" % "0.2.6",
     "com.typesafe" % "config" % "1.3.4",
     "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
+    "com.softwaremill.macwire" % "macros_2.11" % "2.3.3"
 )
 
 lazy val root = Project(id = "lambda-scala-function-root",

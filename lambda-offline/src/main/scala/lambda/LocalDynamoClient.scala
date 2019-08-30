@@ -3,15 +3,23 @@ package lambda
 import java.net.URI
 
 import com.typesafe.config.Config
-import lambda.service.{DynamoClientImpl, DynamoClientT}
-import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider
+import lambda.service.DynamoClientT
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model.{
+  AttributeDefinition,
+  CreateTableRequest,
   CreateTableResponse,
   DeleteTableRequest,
   DescribeTableRequest,
+  GlobalSecondaryIndex,
+  KeySchemaElement,
+  KeyType,
   ListTablesRequest,
+  Projection,
+  ProjectionType,
+  ProvisionedThroughput,
+  ScalarAttributeType
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,8 +42,9 @@ class LocalDynamoClient(val config: Config) extends DynamoClientT {
   }
 
   def createTable: Future[CreateTableResponse] = {
+    println("creating table")
     FutureConverters.toScala(
-      awsClient.createTable(DynamoClientImpl.tableDefinition(tableName))) map {
+      awsClient.createTable(LocalDynamoClient.tableDefinition(tableName))) map {
       r =>
         println(r)
         r
@@ -43,7 +52,7 @@ class LocalDynamoClient(val config: Config) extends DynamoClientT {
   }
 
   def createTableIfNotExists(): Future[Unit] = {
-
+    println(s"checking for $tableName")
     val describeFuture = FutureConverters.toScala(
       awsClient.describeTable(
         DescribeTableRequest.builder().tableName(tableName).build()))
@@ -71,4 +80,48 @@ class LocalDynamoClient(val config: Config) extends DynamoClientT {
   }
 
   createTableIfNotExists()
+}
+object LocalDynamoClient {
+  def tableDefinition(tableName: String): CreateTableRequest = {
+    val partKeyElement = KeySchemaElement
+      .builder().attributeName("partKey").keyType(KeyType.HASH).build()
+    val rangeKeyElement = KeySchemaElement
+      .builder().attributeName("rangeKey").keyType(KeyType.RANGE).build()
+
+    CreateTableRequest
+      .builder()
+      .attributeDefinitions(
+        AttributeDefinition
+          .builder()
+          .attributeName(partKeyElement.attributeName())
+          .attributeType(ScalarAttributeType.S)
+          .build(),
+        AttributeDefinition
+          .builder()
+          .attributeName(rangeKeyElement.attributeName())
+          .attributeType(ScalarAttributeType.S)
+          .build(),
+      )
+      .keySchema(
+        partKeyElement,
+        rangeKeyElement
+      )
+      .globalSecondaryIndexes(
+        GlobalSecondaryIndex
+          .builder().keySchema(KeySchemaElement
+            .builder().attributeName(rangeKeyElement.attributeName()).keyType(
+              KeyType.HASH).build()).indexName("rangeIndex")
+          .projection(
+            Projection.builder().projectionType(ProjectionType.ALL).build())
+          .provisionedThroughput(
+            ProvisionedThroughput
+              .builder().readCapacityUnits(5L).writeCapacityUnits(5L).build()
+          )
+          .build()
+      )
+      .tableName(tableName)
+      .provisionedThroughput(ProvisionedThroughput
+        .builder().readCapacityUnits(5L).writeCapacityUnits(5L).build())
+      .build()
+  }
 }

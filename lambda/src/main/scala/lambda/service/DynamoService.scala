@@ -1,7 +1,7 @@
 package lambda.service
 
 import lambda.models.DynamoItem
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.json.{Reads, Writes}
 
 import scala.concurrent.{ExecutionContext, Future}
 import lambda.serialization.Serializer._

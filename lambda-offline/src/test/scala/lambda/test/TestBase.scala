@@ -1,16 +1,10 @@
 package lambda.test
 
 import com.typesafe.config.ConfigFactory
-import lambda.{AWSLogging, AutowireServer, LocalDynamoClient}
+import lambda.{AWSLogging, LocalDynamoClient}
 import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
-import lambda.models.MovieItem
-import lambda.service.{
-  DynamoClientImpl,
-  DynamoClientT,
-  DynamoService,
-  MovieService,
-  MovieServiceImpl
-}
+import lambda.controller.AutowireServer
+import lambda.service.{MovieService, MovieServiceImpl}
 import org.scalatest.AsyncFunSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -26,10 +20,8 @@ class TestBase extends AsyncFunSpec {
   lazy val movieApiWithDynamo: MovieApiWithDynamo = new MovieApiWithDynamoImpl(
     movieService)
   lazy val autowireServer: AutowireServer =
-    new AutowireServer(movieApiWithDynamo, awsLogging)
+    new AutowireServer(awsLogging)
 
-  // needed for the future flatMap/onComplete in the end
-  //implicit val executionContext = actorSystem.dispatcher
   val movieDynamoService: MovieService = movieService
 
 }
