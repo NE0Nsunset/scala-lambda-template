@@ -11,6 +11,8 @@ locals {
   application_identity = "scala_lambda_${var.aws_region}_${local.app_uuid}"
   application-identity = "scala-lambda-${var.aws_region}-${local.app_uuid}"
 
+  dynamo_db_table = "${local.application-identity}-${var.dynamodb_table_name}"
+
   tags = {
     Environment = "${var.app_uuid}"
     Project     = "${local.api_title}"

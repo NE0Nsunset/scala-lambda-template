@@ -6,4 +6,5 @@ lib_managed
 
 #terraform
 .terraform
+terraform/files
 *.tfstate*

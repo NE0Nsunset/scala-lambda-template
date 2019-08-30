@@ -1,17 +1,20 @@
 package lambda
 
 import java.io.{InputStream, OutputStream}
-import com.amazonaws.services.lambda.runtime.Context
 import play.api.libs.json.{JsObject, Json}
-import ujson.Value
-import upickle._
 import autowire._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import lambda.LambdaHandler.config
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
+import lambda.service.DynamoClientImpl
+import scala.concurrent.ExecutionContext.Implicits.global
 
-object LambdaHandler extends App with AWSLogging {
+trait LambdaDynamoClient {
+  val dynamoClient = new DynamoClientImpl(config)
+}
+
+object LambdaHandler extends LambdaDependencies with LambdaDynamoClient {
 
   lazy val corsEnabled = System.getenv("ENABLE_CORS") == "true"
 
@@ -20,6 +23,13 @@ object LambdaHandler extends App with AWSLogging {
     "access-control-allow-methods" -> "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
     "access-control-allow-origin" -> "*"
   )
+
+  /*
+   * Exists to test jars like they would be run from AWS
+   */
+  def main(args: Array[String]): Unit = {
+    println(autowireController.routeList.toString)
+  }
 
   def response(v: String,
                statusCode: Int = 200,
@@ -36,12 +46,8 @@ object LambdaHandler extends App with AWSLogging {
     * Used with a single AWS lambda configured via AWS Api Gateway to consume all sub-paths of /api
     * @param input
     * @param output
-    * @param context
     */
-  def autowireApiHandler(input: InputStream,
-                         output: OutputStream,
-                         context: Context): Unit = {
-
+  def autowireApiHandler(input: InputStream, output: OutputStream): Unit = {
     val s = scala.io.Source.fromInputStream(input).mkString
     val jsonstr = ujson.read(s)
 
@@ -50,11 +56,13 @@ object LambdaHandler extends App with AWSLogging {
       .toString()
       .replaceAll("^\"|\"$", "")
 
-    logMessage(path.toString)
-    logMessage(bodyString)
+    awsLoggingImpl.logMessage(path.toString)
+    awsLoggingImpl.logMessage(bodyString)
 
     val bodyJson = ujson.read(bodyString)
-    val autowireFuture = autowireApiController(path, bodyJson) map { s =>
+    val autowireFuture = autowireController.autowireApiController(
+      path,
+      bodyJson) map { s =>
       val r: String =
         response(s, 200, if (corsEnabled) corsHeaders else Json.obj())
           .toString()
@@ -62,27 +70,5 @@ object LambdaHandler extends App with AWSLogging {
     }
 
     Await.result(autowireFuture, Duration.create(60, "seconds"))
-  }
-
-  def autowireApiController(path: String,
-                            bodyJsonString: Value): Future[String] = {
-    val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
-    logMessage(strippedPath)
-    logMessage(bodyJsonString.toString())
-    val autowireRequest = autowire.Core
-      .Request(strippedPath.split("/"),
-               ujson
-                 .read(bodyJsonString)
-                 .asInstanceOf[ujson.Obj]
-                 .value
-                 .toMap)
-
-    val route = AutowireServer.routeList
-      .find(r => r.isDefinedAt(autowireRequest))
-      .getOrElse(throw new Exception(s"route not defined for path: $path"))
-
-    val router = route(autowireRequest)
-
-    router.map(ujson.write(_))
   }
 }

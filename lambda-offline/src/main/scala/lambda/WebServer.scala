@@ -1,45 +1,41 @@
 package lambda
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import lambda.LambdaHandler.autowireApiController
-import lambda.LambdaHandler.corsHeaders
-import play.api.libs.json.{JsObject, JsValue, Json}
-import akka.http.scaladsl.unmarshalling.Unmarshaller
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-import lambda.serialization.Picklers._
+import play.api.libs.json.Json
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 
-import scala.io.StdIn
+trait LocalDependencies {
+  this: LambdaDependencies =>
+  override val config = ConfigFactory.load("local")
 
-object WebServer extends App {
-  override def main(args: Array[String]) {
-    val blah = ""
-    implicit val system = ActorSystem("my-system")
-    implicit val materializer = ActorMaterializer()
+  implicit val actorSystem = ActorSystem("my-system")
+  implicit val materializer = ActorMaterializer()(actorSystem)
+  implicit val executionContext = actorSystem.dispatcher
 
-    val host: String = "localhost"
-    val port: Int = 9090
+  val dynamoClient = new LocalDynamoClient(config)
+}
 
-    // needed for the future flatMap/onComplete in the end
-    implicit val executionContext = system.dispatcher
-    val scalajsScript = scalajs.html
-      .scripts("client",
-               name => s"/assets/$name",
-               name => getClass.getResource(s"/public/$name") != null)
-      .body
+object WebServer extends App with LambdaDependencies with LocalDependencies {
 
-    val clientConfig =
-      Json.obj("backendApi" -> s"http://$host:${port.toString}/api/").toString()
+  val host: String = config.getString("akka-http.host")
+  val port: Int = config.getInt("akka-http.port")
 
-    val htmlTemplate =
-      s"""| <html>
+  val scalajsScript = scalajs.html
+    .scripts("client",
+             name => s"/assets/$name",
+             name => getClass.getResource(s"/public/$name") != null)
+    .body
+
+  val clientConfig =
+    Json.obj("backendApi" -> s"http://$host:${port.toString}/api/").toString()
+
+  val htmlTemplate =
+    s"""| <html>
           |   <head>
           |     <!--Import Google Icon Font-->
           |     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -58,38 +54,40 @@ object WebServer extends App {
           |   </body>
           |  </html>""".stripMargin
 
-    val route =
-      pathSingleSlash { // Frontend entry point
-        get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, htmlTemplate))
-        }
-      } ~ pathPrefix("assets" / Remaining) { file =>
-        // optionally compresses the response with Gzip or Deflate
-        // if the client accepts compressed responses
-        encodeResponse {
-          getFromResource("public/" + file)
-        }
-      } ~ pathPrefix("api" / Remaining) { path => // Autowired api endpoint
-        post {
-          decodeRequest {
-            entity(as[String]) { str =>
-              complete(autowireApiController(path, ujson.read(str)).map(x => {
-                println(x)
-                println(corsHeaders.toString())
-                x
-              }))
-            }
+  val route =
+    pathSingleSlash { // Frontend entry point
+      get {
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, htmlTemplate))
+      }
+    } ~ pathPrefix("assets" / Remaining) { file =>
+      // optionally compresses the response with Gzip or Deflate
+      // if the client accepts compressed responses
+      encodeResponse {
+        getFromResource("public/" + file)
+      }
+    } ~ pathPrefix("api" / Remaining) { path => // Autowired api endpoint
+      post {
+        decodeRequest {
+          entity(as[String]) { str =>
+            complete(
+              autowireController
+                .autowireApiController(path, ujson.read(str))
+                .map(x => {
+                  println(x)
+                  x
+                }))
           }
         }
-      } ~ pathPrefix("static") { getFromResourceDirectory("public") }
+      }
+    } ~ pathPrefix("static") {
+      getFromResourceDirectory("public")
+    }
+  val bindingFuture = Http().bindAndHandle(route, host, port)
 
-    val bindingFuture = Http().bindAndHandle(route, host, port)
-
-    println(
-      s"Server online at http://$host:${port.toString}\n Press return to stop")
-//    StdIn.readLine() // let it run until user presses return
-//    bindingFuture
-//      .flatMap(_.unbind()) // trigger unbinding from the port
-//      .onComplete(_ => system.terminate()) // and shutdown when done
-  }
+  println(
+    s"Server online at http://$host:${port.toString}\n Press return to stop")
+  //    StdIn.readLine() // let it run until user presses return
+  //    bindingFuture
+  //      .flatMap(_.unbind()) // trigger unbinding from the port
+  //      .onComplete(_ => actorSystem.terminate()) // and shutdown when done
 }

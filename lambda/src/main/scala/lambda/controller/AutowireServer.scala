@@ -1,18 +1,13 @@
-package lambda
+package lambda.controller
 
-import lambda.api.{
-  AnotherApiExample,
-  AnotherApiExampleImpl,
-  SharedApi,
-  SharedApiImpl,
-}
-
+import lambda.AWSLogging
+import ujson.Value
 import scala.concurrent.ExecutionContext.Implicits.global
-import lambda.serialization.Picklers._
 import ujson.Value
 import upickle.default._
+import scala.concurrent.Future
 
-object AutowireServer
+class AutowireServer(awsLogging: AWSLogging)
     extends autowire.Server[Value,
                             upickle.default.Reader,
                             upickle.default.Writer] {
@@ -22,13 +17,6 @@ object AutowireServer
 
   def read[Result: upickle.default.Reader](p: Value) = {
     val r = upickle.default.read[Result](p)
-    println(r)
     r
   }
-
-  // Bind Api Contracts to their implementations here
-  val routeList = List(
-    AutowireServer.route[SharedApi](SharedApiImpl),
-    AutowireServer.route[AnotherApiExample](AnotherApiExampleImpl)
-  )
 }

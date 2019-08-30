@@ -30,4 +30,6 @@ resource "aws_api_gateway_rest_api" "rest_api" {
 resource "aws_api_gateway_deployment" "a" {
   rest_api_id = "${aws_api_gateway_rest_api.rest_api.id}"
   stage_name = "a"
+
+  stage_description = "${md5(file("${path.module}/templates/openapi.v3.yaml"))}" // actually trigger deploy on api definition change
 }
