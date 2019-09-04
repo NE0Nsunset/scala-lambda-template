@@ -1,17 +1,23 @@
 package lambda.PageLevel
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
-import lambda.AjaxClient
-import lambda.FrontendApp.{movieApiExample, simpleApiFuture}
+import lambda.{AjaxClient, SharedClass}
 import lambda.api.{AnotherApiExample, SharedApi}
 import org.scalajs.dom.document
 import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
 import autowire._
+import com.thoughtworks.binding.Binding.Var
+import lambda.models.Movie
+
 import scala.util.{Failure, Success}
 import lambda.serialization.Picklers._
+import wvlet.airframe._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scalaz.std.option._
 
 class Home extends PageComponent {
+  val ajaxClient: AjaxClient = bind[AjaxClient]
+  val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
+  val movieApiExample: Var[Option[FutureBinding[Option[Movie]]]] = Var(None)
 
   @dom val isLoading: Binding[Boolean] =
     simpleApiFuture.bind.map(_.bind) match {
@@ -34,7 +40,7 @@ class Home extends PageComponent {
       .getElementById("description")
       .asInstanceOf[HTMLInputElement]
       .value
-    val f = AjaxClient[SharedApi]
+    val f = ajaxClient[SharedApi]
       .doThing(n, d)
       .call()
     simpleApiFuture.value = Some(FutureBinding(f))
@@ -43,7 +49,7 @@ class Home extends PageComponent {
   def sendMovieApiExampleRequest(): Unit = {
     val movieTitle: String =
       document.getElementById("movieTitle").asInstanceOf[HTMLInputElement].value
-    val f = AjaxClient[AnotherApiExample].findMovieByName(movieTitle).call()
+    val f = ajaxClient[AnotherApiExample].findMovieByName(movieTitle).call()
     movieApiExample.value = Some(FutureBinding(f))
   }
   @dom def simpleExampleRender: Binding[Node] =

@@ -22,8 +22,6 @@ trait MovieService extends DynamoService[MovieItem] {
 
 class MovieServiceImpl(config: Config, val clientHandler: DynamoClientT)
     extends MovieService {
-  implicit val readsT = movieReads
-  implicit val writesT = movieWrites
 
 //  // TODO cleanup query generation and execution
 //  override def findMoviesByName(name: String): Future[List[MovieItem]] = {

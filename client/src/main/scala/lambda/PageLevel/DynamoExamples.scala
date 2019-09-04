@@ -11,14 +11,15 @@ import scalaz.std.list._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import wvlet.airframe._
 
 class DynamoExamples extends PageComponent {
-
+  val ajaxClient = bind[AjaxClient]
   val moviesLoaded: Vars[MovieItem] = Vars.empty[MovieItem]
 
   val loadMovies = FutureBinding {
     for {
-      movies <- AjaxClient[MovieApiWithDynamo].retrieveAllMovies().call()
+      movies <- ajaxClient[MovieApiWithDynamo].retrieveAllMovies().call()
     } yield {
       moviesLoaded.value ++= movies
     }
@@ -34,7 +35,7 @@ class DynamoExamples extends PageComponent {
     val imageUrl = form.elements(3).asInstanceOf[HTMLInputElement].value
     val movie = MovieItem.createMovie(title, year.toInt, description, imageUrl)
 
-    AjaxClient[MovieApiWithDynamo].putMovie(movie).call() map {
+    ajaxClient[MovieApiWithDynamo].putMovie(movie).call() map {
       if (_)
         moviesLoaded.value += movie
     }

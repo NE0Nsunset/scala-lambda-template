@@ -27,11 +27,6 @@ trait DynamoService[T <: DynamoItem] {
   //val prefixName: String
   val clientHandler: DynamoClientT
 
-  // Implementors must define their read/write serializers
-  // TODO try and clean this up
-  implicit val readsT: Reads[T]
-  implicit val writesT: Writes[T]
-
   def itemConvert(av: Map[String, AttributeValue]): T
 
   def scan: Future[ScanResponse] = {
@@ -57,8 +52,8 @@ trait DynamoService[T <: DynamoItem] {
     }
   }
 
-//  def findItemByRangeKey(rangeKey: String) = {}
-//
+  //  def findItemByRangeKey(rangeKey: String) = {}
+  //
   def put(t: T): Future[PutItemResponse] = {
     val putItemRequest =
       PutItemRequest

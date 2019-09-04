@@ -6,17 +6,18 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import ujson.Value
 import upickle._
+import wvlet.airframe._
 
 /**
   * An autowire ajax client that maps API contracts from shared/api as method calls
   * e.g. Client[SharedApi].doThing("name here", "description here")
   */
-object AjaxClient
+class AjaxClient
     extends autowire.Client[ujson.Value,
                             upickle.default.Reader,
                             upickle.default.Writer] {
-
-  val backendUrl: String = FrontendApp.clientConfig.backendApiUrl
+  val clientConfig = bind[ClientConfig]
+  val backendUrl: String = clientConfig.backendApiUrl
 
   override def doCall(req: Request): Future[ujson.Value] = {
     Ajax
