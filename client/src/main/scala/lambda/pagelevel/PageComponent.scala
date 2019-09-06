@@ -1,4 +1,4 @@
-package lambda.PageLevel
+package lambda.pagelevel
 
 import com.thoughtworks.binding.Binding
 import org.scalajs.dom.raw.Node

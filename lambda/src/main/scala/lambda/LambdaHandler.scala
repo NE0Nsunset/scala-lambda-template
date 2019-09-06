@@ -3,7 +3,6 @@ package lambda
 import java.io.{InputStream, OutputStream}
 import play.api.libs.json.{JsObject, Json}
 import autowire._
-import lambda.LambdaHandler.config
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import lambda.serialization.Picklers._
@@ -11,7 +10,8 @@ import lambda.service.DynamoClientImpl
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait LambdaDynamoClient {
-  val dynamoClient = new DynamoClientImpl(config)
+  this: LambdaDependencies =>
+  lazy val dynamoClient = new DynamoClientImpl(config)
 }
 
 object LambdaHandler extends LambdaDependencies with LambdaDynamoClient {

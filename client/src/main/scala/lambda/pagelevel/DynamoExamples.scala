@@ -1,9 +1,9 @@
-package lambda.PageLevel
+package lambda.pagelevel
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import org.scalajs.dom.raw.{Event, HTMLFormElement, HTMLInputElement, Node}
 import autowire._
 import com.thoughtworks.binding.Binding.Vars
-import lambda.AjaxClient
+import lambda.UsesAjaxClient
 import lambda.api.MovieApiWithDynamo
 import lambda.models.MovieItem
 import lambda.serialization.Picklers._
@@ -13,8 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import wvlet.airframe._
 
-class DynamoExamples extends PageComponent {
-  val ajaxClient = bind[AjaxClient]
+class DynamoExamples extends PageComponent with UsesAjaxClient {
   val moviesLoaded: Vars[MovieItem] = Vars.empty[MovieItem]
 
   val loadMovies = FutureBinding {

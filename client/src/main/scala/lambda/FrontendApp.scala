@@ -10,8 +10,8 @@ import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import autowire._
-import lambda.PageLevel.PageComponent
-import lambda.Routing.{RouteName, SimpleRoute, SimpleRouter}
+import lambda.pagelevel.PageComponent
+import lambda.routing.{RouteName, Routes, SimpleRoute, SimpleRouter}
 import lambda.models.Movie
 import lambda.serialization.Picklers._
 
@@ -29,6 +29,7 @@ object FrontendApp extends js.JSApp {
       .bind[SimpleRouter].toEagerSingleton
       .bind[ClientConfig].toEagerSingleton
       .bind[AjaxClient].toSingleton
+      .bind[Routes].toEagerSingleton
 
   val session = design.newSession
   val builtSession = session.build[FrontendApp]
@@ -57,12 +58,11 @@ trait FrontendApp {
     </nav>
 
   @dom def appLayout: Binding[BindingSeq[Node]] = {
-    lazy val current: SimpleRoute[_ <: PageComponent] =
-      router.currentRouteOpt.bind.getOrElse(router.routeList.head)
     Constants(
       navBar.bind,
-      router.currentPageComponent.bind.render.bind
+      router.currentPageComponentOrEmpty.bind.render.bind
     )
   }
 
+  router.routeFromCurrentLocation
 }

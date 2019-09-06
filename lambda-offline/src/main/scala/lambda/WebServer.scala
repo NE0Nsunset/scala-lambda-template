@@ -55,11 +55,7 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
           |  </html>""".stripMargin
 
   val route =
-    pathSingleSlash { // Frontend entry point
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, htmlTemplate))
-      }
-    } ~ pathPrefix("assets" / Remaining) { file =>
+    pathPrefix("assets" / Remaining) { file =>
       // optionally compresses the response with Gzip or Deflate
       // if the client accepts compressed responses
       encodeResponse {
@@ -73,7 +69,6 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
               autowireController
                 .autowireApiController(path, ujson.read(str))
                 .map(x => {
-                  println(x)
                   x
                 }))
           }
@@ -81,6 +76,10 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
       }
     } ~ pathPrefix("static") {
       getFromResourceDirectory("public")
+    } ~ path(Remaining) { _ => // Frontend entry point
+      get {
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, htmlTemplate))
+      }
     }
   val bindingFuture = Http().bindAndHandle(route, host, port)
 

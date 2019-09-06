@@ -13,7 +13,6 @@ class AutowireController(awsLogging: AWSLogging,
 
   def autowireApiController(path: String,
                             bodyJsonString: Value): Future[String] = {
-    println(routeList.toString)
     val strippedPath = path.replaceAll("^\"|\"$", "") // remove pesky quotes AWS likes to include
     awsLogging.logMessage(strippedPath)
     awsLogging.logMessage(bodyJsonString.toString())

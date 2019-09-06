@@ -36,3 +36,7 @@ class AjaxClient
     upickle.default.read[Result](p)
   }
 }
+
+trait UsesAjaxClient {
+  val ajaxClient = bind[AjaxClient]
+}
