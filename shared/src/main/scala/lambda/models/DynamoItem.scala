@@ -1,6 +1,9 @@
 package lambda.models
 
+import java.time.LocalDateTime
+
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 /**
   * Implementors will need to come up with their own strategy
@@ -25,4 +28,12 @@ trait DynamoItem {
   val createdAt: String;
   val lastUpdate: String;
   def itemToAttributeMap: java.util.Map[String, AttributeValue]
+}
+
+object DynamoItem {
+  def currentISODateTime: String =
+    LocalDateTime.now().format(ISO_LOCAL_DATE_TIME)
+
+  def dateTimeFromISOString(isoString: String): LocalDateTime =
+    LocalDateTime.parse(isoString, ISO_LOCAL_DATE_TIME)
 }

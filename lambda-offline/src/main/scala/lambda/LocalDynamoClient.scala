@@ -3,6 +3,7 @@ package lambda
 import java.net.URI
 
 import com.typesafe.config.Config
+import lambda.seed.SeedObjects
 import lambda.service.DynamoClientT
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
@@ -78,8 +79,6 @@ class LocalDynamoClient(val config: Config) extends DynamoClientT {
     FutureConverters.toScala(
       awsClient.listTables(ListTablesRequest.builder().build()))
   }
-
-  createTableIfNotExists()
 }
 object LocalDynamoClient {
   def tableDefinition(tableName: String): CreateTableRequest = {

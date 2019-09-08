@@ -1,22 +1,30 @@
 package lambda.pagelevel
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import lambda.{SharedClass, UsesAjaxClient}
-import lambda.api.{AnotherApiExample, SharedApi}
+import lambda.api.{AnotherApiExample, BlogApi, SharedApi}
 import org.scalajs.dom.document
 import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
-import autowire._
 import com.thoughtworks.binding.Binding.Var
-import lambda.models.Movie
+import lambda.models.{BlogItem, Movie}
 import scala.util.{Failure, Success}
 import lambda.serialization.Picklers._
 import wvlet.airframe._
+import autowire._
+import lambda.routing.{RouteName, UsesSimpleRouter}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scalaz.std.option._
+import scalaz.std.list._
 
-class Home extends PageComponent with UsesAjaxClient {
+import scala.concurrent.Future
+
+class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
   val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
   val movieApiExample: Var[Option[FutureBinding[Option[Movie]]]] = Var(None)
+
+  val latestBlogs: FutureBinding[List[BlogItem]] = FutureBinding {
+    ajaxClient[BlogApi].getNBlogs(10).call()
+  }
 
   @dom val isLoading: Binding[Boolean] =
     simpleApiFuture.bind.map(_.bind) match {
@@ -123,6 +131,19 @@ class Home extends PageComponent with UsesAjaxClient {
       </div>
     </div>
 
+  @dom def blogTitle(blogItems: List[BlogItem]): Binding[Node] = {
+    <ul>
+      {blogItems map { blogItem =>
+      <li>
+        <a href="" onclick={event: Event => {event.preventDefault(); simpleRouter.changeToRouteByName(RouteName.BlogDetail.entryName, BlogDetail.props(new scalajs.js.Date(blogItem.rangeKey.split("#")(0)), blogItem.slug))  } }>
+          {blogItem.title}
+        </a>
+
+      </li>
+      }}
+    </ul>
+  }
+
   @dom def render: Binding[Node] =
     <div class="section no-pad-bot" id="index-banner">
       <div class="container">
@@ -133,6 +154,13 @@ class Home extends PageComponent with UsesAjaxClient {
         <div class="row">
           {simpleExampleRender.bind}
           {movieApiExampleRender.bind}
+        </div>
+        <div class="row">
+          {latestBlogs.bind match {
+          case Some(Success(xs @ head :: tail)) => blogTitle(xs).bind
+          case Some(Success(Nil)) => <!-- -->
+          case _ => <p>loading ...</p>
+          }}
         </div>
       </div>
     </div>

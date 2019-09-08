@@ -24,7 +24,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @tparam T
   */
 trait DynamoService[T <: DynamoItem] {
-  //val prefixName: String
   val clientHandler: DynamoClientT
 
   def itemConvert(av: Map[String, AttributeValue]): T
@@ -52,12 +51,16 @@ trait DynamoService[T <: DynamoItem] {
     }
   }
 
-  //  def findItemByRangeKey(rangeKey: String) = {}
-  //
   def put(t: T): Future[PutItemResponse] = {
     val putItemRequest =
       PutItemRequest
         .builder().tableName(clientHandler.tableName).item(t.itemToAttributeMap).build()
     FutureConverters.toScala(clientHandler.awsClient.putItem(putItemRequest))
+  }
+
+  def putIfNotExists(t: T): Future[Option[PutItemResponse]] = {
+    findItemByCompositeKey(t.partKey, t.rangeKey) flatMap { exists =>
+      if (exists.isDefined) Future { None } else put(t).map(Some(_))
+    }
   }
 }

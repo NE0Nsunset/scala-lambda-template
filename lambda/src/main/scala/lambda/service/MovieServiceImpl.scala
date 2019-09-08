@@ -23,33 +23,6 @@ trait MovieService extends DynamoService[MovieItem] {
 class MovieServiceImpl(config: Config, val clientHandler: DynamoClientT)
     extends MovieService {
 
-//  // TODO cleanup query generation and execution
-//  override def findMoviesByName(name: String): Future[List[MovieItem]] = {
-//    val attributeValues = Map(
-//      ":partKeyVal" -> new AttributeValue(MovieItem.defaultPartKey),
-//      ":nameVal" -> new AttributeValue(name)).asJava
-//    val expressionAttributeNames = Map("#name" -> "title").asJava
-//
-//    val queryRequest = new QueryRequest(clientHandler.tableName)
-//      .withExpressionAttributeValues(attributeValues)
-//      .withExpressionAttributeNames(expressionAttributeNames)
-//      .withKeyConditionExpression("partKey = :partKeyVal")
-//      .withFilterExpression("contains(#name, :nameVal)")
-//
-//    clientHandler.awsClient.queryAsync(queryRequest)
-//    val source = DynamoDb
-//      .source(queryRequest)
-//      .withAttributes(DynamoAttributes.client(clientHandler.alpakkaClient))
-//
-//    source.runWith(Sink.head) map { result =>
-//      {
-//        result.getItems.asScala
-//          .map(i => Json.parse(ItemUtils.toItem(i).toJSON).as[MovieItem])
-//          .toList
-//      }
-//    }
-//  }
-//
   def findAllMovies(): Future[List[MovieItem]] = {
 
     val attributeValues = Map(
