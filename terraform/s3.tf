@@ -5,7 +5,7 @@ resource "aws_s3_bucket" "frontend_ui" {
 
   website {
     index_document = "index.html"
-    error_document = "error.html"
+    error_document = "index.html" // redirects all subroutes to index.html, in production you should use cloudfront for this to avoid 404s
   }
   force_destroy = true
 }
@@ -15,7 +15,6 @@ data "template_file" "frontend_ui_public_policy" {
 
   vars {
     bucket_arn = "${aws_s3_bucket.frontend_ui.arn}"
-    cf_access_iam_util_arn = "${var.s3_utility_user_arn}"
   }
 }
 
@@ -49,7 +48,6 @@ resource "aws_s3_bucket_object" "client-opt" {
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../client/target/scala-2.12/client-opt.js"))}"
-  //etag = "${filemd5("../client/target/scala-2.12/client-opt.js")}"
 }
 
 resource "aws_s3_bucket_object" "client-jsdeps" {
@@ -58,9 +56,6 @@ resource "aws_s3_bucket_object" "client-jsdeps" {
   source = "../client/target/scala-2.12/client-jsdeps.js"
   content_type = "text/html"
   acl    = "public-read"
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../client/target/scala-2.12/client-jsdeps.js"))}"
 }
 
@@ -69,12 +64,7 @@ resource "aws_s3_bucket_object" "indexhtml" {
   key = "index.html"
   source = "../lambda-offline/src/main/public/index.html"
   content_type = "text/html"
-
   acl    = "public-read"
-
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/index.html"))}"
 }
 
@@ -83,12 +73,7 @@ resource "aws_s3_bucket_object" "materializecss" {
   key = "css/materialize.min.css"
   source = "../lambda-offline/src/main/public/css/materialize.min.css"
   content_type = "text/css"
-
   acl    = "public-read"
-
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/css/materialize.min.css"))}"
 }
 
@@ -97,13 +82,26 @@ resource "aws_s3_bucket_object" "stylecss" {
   key = "css/style.css"
   source = "../lambda-offline/src/main/public/css/style.css"
   content_type = "text/css"
-
   acl    = "public-read"
-
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/css/style.css"))}"
+}
+
+resource "aws_s3_bucket_object" "maincss" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "css/style.css"
+  source = "../lambda-offline/src/main/public/css/main.css"
+  content_type = "text/css"
+  acl    = "public-read"
+  etag = "${md5(file("../lambda-offline/src/main/public/css/main.css"))}"
+}
+
+resource "aws_s3_bucket_object" "backgroundimg" {
+  bucket = "${aws_s3_bucket.frontend_ui.id}"
+  key = "img/traintracks.jpg"
+  source = "../lambda-offline/src/main/public/img/traintracks.jpg"
+  content_type = "text/css"
+  acl    = "public-read"
+  etag = "${md5(file("../lambda-offline/src/main/public/img/traintracks.jpg"))}"
 }
 
 resource "aws_s3_bucket_object" "materializejs" {
@@ -111,12 +109,7 @@ resource "aws_s3_bucket_object" "materializejs" {
   key = "js/materialize.min.js"
   source = "../lambda-offline/src/main/public/js/materialize.min.js"
   content_type = "text/javascript"
-
   acl    = "public-read"
-
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   etag = "${md5(file("../lambda-offline/src/main/public/js/materialize.min.js"))}"
 }
 
@@ -125,6 +118,5 @@ resource "aws_s3_bucket_object" "client_config_js" {
   key = "js/client_config.js"
   content = "${data.template_file.client_config_script.rendered}"
   content_type = "text/javascripts"
-
   acl    = "public-read"
 }

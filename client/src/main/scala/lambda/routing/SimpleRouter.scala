@@ -21,7 +21,10 @@ class SimpleRouter {
   val emptyPageComponent = new EmptyPageComponent
 
   // A map of url token name to value extracted from [[SimpleRoute.pathPattern]]
-  var currentRouteProps: List[(String, String)] = Nil
+  var currentRouteKeyValues: List[(String, String)] = Nil
+
+  def findRouteValue(routeKey: String): Option[String] =
+    currentRouteKeyValues.find(_._1 == routeKey).map(_._2)
 
   val currentRouteOpt = Var[Option[SimpleRoutePageComponent]](None)
 
@@ -44,27 +47,26 @@ class SimpleRouter {
 
     currentRouteOpt.value = routeList.find(_.routeName.entryName == routeName)
 
+    // TODO cleanup
     val calculatedPath = {
       val x =
         s"/${currentRouteOpt.value.map(_.tokenMapToHref(routeProps)).getOrElse("/")}"
       if (x.startsWith("//")) x.tail else x
     }
 
-    println(calculatedPath)
-
     window.history.pushState(Dynamic.literal(), "", s"$calculatedPath")
-    currentRouteProps = routeProps
+    currentRouteKeyValues = routeProps
     currentPageComponentOpt.value = currentRouteOpt.value
       .map(_.sessionToComponent(FrontendApp.session))
   }
 
   def routeFromCurrentLocation = {
-    currentRouteProps = Nil // unset route props
+    currentRouteKeyValues = Nil // unset route props
     val href = window.location.pathname
     val current = routeList.find(_.matches(href))
     currentRouteOpt.value = current
     current foreach { x =>
-      currentRouteProps = x.routeTokenMap(href)
+      currentRouteKeyValues = x.routeTokenMap(href)
     }
     currentPageComponentOpt.value = current
       .map(_.sessionToComponent(FrontendApp.session))
@@ -103,9 +105,8 @@ case class SimpleRoute[Component <: PageComponent](
     tokens.map(x => x._1.tail -> hrefTokens(x._2)).toList
   }
 
+  // reconstructs a URL from tokens
   def tokenMapToHref(tokenMap: List[(String, String)]): String = {
-    println(tokenMap.toString)
-    println(pathPatternTokens.toList.toString)
     val patternTokens = pathPatternTokens.zipWithIndex
     patternTokens
       .map(

@@ -1,4 +1,5 @@
 package lambda.pagelevel
+
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import lambda.{SharedClass, UsesAjaxClient}
 import lambda.api.{AnotherApiExample, BlogApi, SharedApi}
@@ -11,7 +12,6 @@ import lambda.serialization.Picklers._
 import wvlet.airframe._
 import autowire._
 import lambda.routing.{RouteName, UsesSimpleRouter}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scalaz.std.option._
 import scalaz.std.list._
@@ -19,117 +19,66 @@ import scalaz.std.list._
 import scala.concurrent.Future
 
 class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
-  val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
-  val movieApiExample: Var[Option[FutureBinding[Option[Movie]]]] = Var(None)
 
   val latestBlogs: FutureBinding[List[BlogItem]] = FutureBinding {
     ajaxClient[BlogApi].getNBlogs(10).call()
   }
 
-  @dom val isLoading: Binding[Boolean] =
-    simpleApiFuture.bind.map(_.bind) match {
-      case Some(Some(Success(_))) | None => false
-      case Some(None)                    => true
-      case Some(Some(Failure(_)))        => false
-    }
-
-  @dom val isMovieApiLoading: Binding[Boolean] =
-    movieApiExample.bind.map(_.bind) match {
-      case Some(Some(Success(_))) | None => false
-      case Some(None)                    => true
-      case Some(Some(Failure(_)))        => false
-    }
-
-  def sendSimpleApiRequest(): Unit = {
-    val n: String =
-      document.getElementById("name").asInstanceOf[HTMLInputElement].value
-    val d: String = document
-      .getElementById("description")
-      .asInstanceOf[HTMLInputElement]
-      .value
-    val f = ajaxClient[SharedApi]
-      .doThing(n, d)
-      .call()
-    simpleApiFuture.value = Some(FutureBinding(f))
+  @dom def banner: Binding[Node] = {
+    <div id="index-banner" class="parallax-container" style="height:350px;">
+      <div class="section no-pad-bot">
+        <div class="container">
+          <br /><br />
+          <br /><br />
+          <div class="row center">
+            <h5 class="header col s12 white-text">A modern single page application template for AWS</h5>
+            <h5 class="header col s12 white-text">Powered by a Scala backend and <a href="https://github.com/ThoughtWorksInc/Binding.scala" target="_blank" class="grey-text">Binding.scala</a> frontend</h5>
+          </div>
+          <br /><br />
+        </div>
+      </div>
+      <div class="parallax"><img src="/static/img/traintracks.jpg" alt="Unsplashed background img 1" style="transform: translate3d(-50%, 240.88px, 0px); opacity: 1;" /></div>
+    </div>
   }
 
-  def sendMovieApiExampleRequest(): Unit = {
-    val movieTitle: String =
-      document.getElementById("movieTitle").asInstanceOf[HTMLInputElement].value
-    val f = ajaxClient[AnotherApiExample].findMovieByName(movieTitle).call()
-    movieApiExample.value = Some(FutureBinding(f))
-  }
-  @dom def simpleExampleRender: Binding[Node] =
-    <div class="col s12 m4">
-      <div class="icon-block">
-        <h5 class="center">Simple API Example</h5>
-        <p class="light">Click the button to send a request to the lambda backend. On its return, you should the result! (it's shared/lambda.SharedClass)</p>
-        {
-        if (isLoading.bind)
-          <div class="progress">
-            <div class="indeterminate"></div>
+  @dom def bulletPoints: Binding[Node] = {
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center brown-text"><i class="material-icons">share</i></h2>
+            <h5 class="center">Shared Objects</h5>
+            <p class="light">
+              Utilizing Scala.js, API contracts and objects are defined once (in the shared sub-project) between the frontend and backend.
+              Additionally, all frontend requests are routed through just one Lambda via <a href="https://github.com/lihaoyi/autowire" target="_blank">Autowire</a> saving you time in development.
+            </p>
           </div>
-        else
-          <!-- -->
-        }
-        {
-        simpleApiFuture.bind.map(_.bind) match {
-          case Some(Some(Success(sharedClass))) => <div>{sharedClass.toString}</div>
-          case _ => <div>>{simpleApiFuture.bind.map(_.bind).toString}</div>
-        }
-        }
-        <div class="row">
-          <div class="input-field col s6">
-            <input id="name" type="text" class="validate" />
-            <label for="first_name">Name</label>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center brown-text"><i class="material-icons">cloud</i></h2>
+            <h5 class="center">AWS and Local Development</h5>
+            <p class="light">
+              Iterate faster by developing locally with the included Akka Http server that simulates a close representation of how the Scala Lambda template would work once deployed to AWS.
+              Pre-defined Terraform config files allow you to easily deploy a basic infrastructure to AWS when ready.
+            </p>
           </div>
-          <div class="input-field col s6">
-            <input id="description" type="text" class="validate" />
-            <label for="last_name">Description</label>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="icon-block">
+            <h2 class="center brown-text"><i class="material-icons">settings</i></h2>
+            <h5 class="center">Easy to Extend</h5>
+            <p class="light">
+              This template includes examples for getting objects into and out of Amazon's DynamoDb, a simple document store.
+              With type-safety and a common language across the frontend and backend, it's easy to extend to your needs.
+            </p>
           </div>
-          <a href="javascript:void(0)" class="btn-large waves-effect waves-light orange" onclick={_:Event => sendSimpleApiRequest()}>Try it!</a>
         </div>
       </div>
     </div>
-
-  @dom def movieApiExampleRender: Binding[Node] =
-    <div class="col s12 m4">
-      <div class="icon-block">
-        <h5 class="center">shared/lambda.api.AnotherApiExample</h5>
-        <p class="light">
-          This time, we'll search for a movie in our simple database.
-          Try searching for "Shawshank" or "Godfather".
-          Then, take a look at lambda/lambda.api.AnotherApiExampleImpl for other searches you can make
-        </p>
-        {
-        if (isMovieApiLoading.bind)
-          <div class="progress">
-            <div class="indeterminate"></div>
-          </div>
-        else
-          <!-- -->
-        }
-        {
-        movieApiExample.bind.map(_.bind) match {
-          case Some(Some(Success(Some(movie)))) =>
-            <div>
-              {movie.title}<br />
-              {movie.year.toString}<br />
-              <p>{movie.description}</p>
-              <p><img src={movie.thumbnail}/></p>
-            </div>
-          case _ => <div>>{movieApiExample.bind.map(_.bind).toString}</div>
-        }
-        }
-        <div class="row">
-          <div class="input-field col s6">
-            <input id="movieTitle" type="text" class="validate" />
-            <label for="movieTitle">Movie Title</label>
-          </div>
-          <a href="javascript:void(0)" class="btn-large waves-effect waves-light orange" onclick={_:Event => sendMovieApiExampleRequest()}>Search Movie!</a>
-        </div>
-      </div>
-    </div>
+  }
 
   @dom def blogTitle(blogItems: List[BlogItem]): Binding[Node] = {
     <ul>
@@ -144,23 +93,39 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
     </ul>
   }
 
-  @dom def render: Binding[Node] =
-    <div class="section no-pad-bot" id="index-banner">
-      <div class="container">
-        <br /><br />
-        <h1 class="header center orange-text">Example API calls</h1>
-        <br /><br />
-        <p></p>
-        <div class="row">
-          {simpleExampleRender.bind}
-          {movieApiExampleRender.bind}
+  @dom def showMeTheCode: Binding[Node] = {
+    <div class="container">
+        <div class="section">
+          <div class="row">
+            <div class="col s12 center">
+              <h3><i class="mdi-content-send brown-text"></i></h3>
+              <h4>Getting Started</h4>
+              <p>Checkout the <a href="https://bitbucket.org/jkapple/scala-lambda-template/" target="_blank">bitbucket repository</a> and read through the README.md to get a deployable copy of this website. Then, dive into the code to see how the examples work!</p>
+              <p>This website is also a working example of the template. Open the developer console and head to the <a href="/dynamo-examples" onclick={e: Event => {
+                e.preventDefault();
+                simpleRouter.changeToRouteByName(RouteName.DynamoExample.entryName)}}>examples</a> page to see requests and responses in action.</p>
+            </div>
+          </div>
         </div>
-        <div class="row">
-          {latestBlogs.bind match {
-          case Some(Success(xs @ head :: tail)) => blogTitle(xs).bind
-          case Some(Success(Nil)) => <!-- -->
-          case _ => <p>loading ...</p>
-          }}
+      </div>
+  }
+
+  @dom def render: Binding[Node] =
+    <div>
+      {banner.bind}
+      {bulletPoints.bind}
+      {showMeTheCode.bind}
+      <div class="no-pad-bot" id="index-banner">
+        <div class="container">
+          <div class="row">
+          </div>
+          <div class="row">
+            {latestBlogs.bind match {
+            case Some(Success(xs @ head :: tail)) => blogTitle(xs).bind
+            case Some(Success(Nil)) => <!-- -->
+            case _ => <p>loading ...</p>
+            }}
+          </div>
         </div>
       </div>
     </div>

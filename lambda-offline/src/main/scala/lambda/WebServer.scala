@@ -8,7 +8,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import lambda.models.BlogItem
+import lambda.models.{BlogItem, MovieItem}
 import lambda.seed.SeedObjects
 
 trait LocalDependencies {
@@ -43,11 +43,13 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
           |     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
           |     <!--Import materialize.css-->
           |     <link type="text/css" rel="stylesheet" href="/static/css/materialize.min.css"  media="screen,projection"/>
+          |     <link type="text/css" rel="stylesheet" href="/static/css/main.css"  media="screen,projection"/>
           |     <!--Let browser know website is optimized for mobile-->
           |      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
           |   </head>
           |   <body>
-          |     <div id="lambdaapp"></div>
+          |     <main id="lambda-app"></main>
+          |     <footer id="lambda-app-footer"></footer>
           |     <script type="text/javascript">
           |       window.clientConfig = $clientConfig
           |     </script>
@@ -90,8 +92,8 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
       _ =>
         // Seed local database only if items do not exist and table is created
         SeedObjects.seeds map {
-          case blogItem: BlogItem => blogService.putIfNotExists(blogItem)
-          case _                  =>
+          case blogItem: BlogItem   => blogService.putIfNotExists(blogItem)
+          case movieItem: MovieItem => movieService.putIfNotExists(movieItem)
       })
 
   println(

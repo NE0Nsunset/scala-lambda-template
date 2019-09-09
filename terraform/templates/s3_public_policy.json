@@ -6,7 +6,7 @@
       "Sid": "AllowCFRead",
       "Effect": "Allow",
       "Principal": {
-        "AWS": ["${cf_access_iam_util_arn}"]
+        "AWS": "*"
       },
       "Action": [
         "s3:GetObject",

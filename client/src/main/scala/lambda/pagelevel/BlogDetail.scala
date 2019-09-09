@@ -1,8 +1,5 @@
 package lambda.pagelevel
 
-import java.time.LocalDate
-import java.util.Date
-
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
 import lambda.UsesAjaxClient
 import lambda.api.BlogApi
@@ -20,13 +17,13 @@ class BlogDetail
     with UsesAjaxClient {
 
   val year =
-    simpleRouter.currentRouteProps.find(_._1 == "year").map(_._2.toInt).get
+    simpleRouter.findRouteValue("year").get.toInt
   val month =
-    simpleRouter.currentRouteProps.find(_._1 == "month").map(_._2.toInt).get
+    simpleRouter.findRouteValue("month").get.toInt
   val date =
-    simpleRouter.currentRouteProps.find(_._1 == "date").map(_._2.toInt).get
+    simpleRouter.findRouteValue("date").get.toInt
   val slug =
-    simpleRouter.currentRouteProps.find(_._1 == "slug").map(_._2.toString).get
+    simpleRouter.findRouteValue("slug").get
 
   val loadedBlog =
     FutureBinding {
@@ -35,7 +32,7 @@ class BlogDetail
 
   @dom def render: Binding[Node] = {
     <div class="section no-pad-bot" id="index-banner">
-      {simpleRouter.currentRouteProps.toString}
+      {simpleRouter.currentRouteKeyValues.toString}
       {loadedBlog.bind.toString}
     </div>
   }

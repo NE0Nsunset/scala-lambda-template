@@ -1,7 +1,7 @@
 package lambda.routing
 
 import enumeratum.EnumEntry
-import lambda.pagelevel.{BlogDetail, DynamoExamples, Home}
+import lambda.pagelevel.{BlogDetail, Examples, Home}
 import wvlet.airframe._
 
 trait Routes {
@@ -10,10 +10,9 @@ trait Routes {
     SimpleRoute[Home]("/",
                       RouteName.Home,
                       (session: Session) => session.build[Home]),
-    SimpleRoute[DynamoExamples](
-      "/dynamo-examples",
-      RouteName.DynamoExample,
-      (session: Session) => session.build[DynamoExamples]),
+    SimpleRoute[Examples]("/dynamo-examples",
+                          RouteName.DynamoExample,
+                          (session: Session) => session.build[Examples]),
     SimpleRoute[BlogDetail]("/blog/:year/:month/:date/:slug",
                             RouteName.BlogDetail,
                             (session: Session) => session.build[BlogDetail])
