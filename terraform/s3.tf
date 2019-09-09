@@ -88,7 +88,7 @@ resource "aws_s3_bucket_object" "stylecss" {
 
 resource "aws_s3_bucket_object" "maincss" {
   bucket = "${aws_s3_bucket.frontend_ui.id}"
-  key = "css/style.css"
+  key = "css/main.css"
   source = "../lambda-offline/src/main/public/css/main.css"
   content_type = "text/css"
   acl    = "public-read"
@@ -97,7 +97,7 @@ resource "aws_s3_bucket_object" "maincss" {
 
 resource "aws_s3_bucket_object" "backgroundimg" {
   bucket = "${aws_s3_bucket.frontend_ui.id}"
-  key = "img/traintracks.jpg"
+  key = "static/img/traintracks.jpg"
   source = "../lambda-offline/src/main/public/img/traintracks.jpg"
   content_type = "text/css"
   acl    = "public-read"
