@@ -1,6 +1,6 @@
 .idea
 target
-project
+project/target
 *.sc
 lib_managed
 
