@@ -24,8 +24,8 @@ import scala.scalajs.js
 object FrontendApp extends js.JSApp {
   val design: Design =
     newDesign
-      .bind[SimpleRouter].toEagerSingleton
       .bind[ClientConfig].toEagerSingleton
+      .bind[SimpleRouter].toSingleton
       .bind[AjaxClient].toSingleton
       .bind[Routes].toEagerSingleton
 

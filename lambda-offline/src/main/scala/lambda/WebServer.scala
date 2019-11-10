@@ -34,7 +34,10 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
     .body
 
   val clientConfig =
-    Json.obj("backendApi" -> s"http://$host:${port.toString}/api/").toString()
+    Json
+      .obj("backendApi" -> s"http://$host:${port.toString}/api/",
+           "apiStage" -> "",
+           "staticUrl" -> "").toString()
 
   val htmlTemplate =
     s"""| <html>

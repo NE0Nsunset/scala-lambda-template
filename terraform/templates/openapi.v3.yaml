@@ -1,8 +1,50 @@
 openapi: 3.0.0
 info:
-  version: "v${app_version}"
+  version: "${app_version}"
   title: "${api_title}"
 paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: Successful operation
+      x-amazon-apigateway-integration:
+        credentials: "${iam_role_arn}"
+        uri: "${frontend_arn}"
+        responses:
+          default:
+            statusCode: "500"
+          200:
+            statusCode: "200"
+          403:
+            statusCode: "403"
+          404:
+            statusCode: "404"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "AWS_PROXY"
+      summary: Frontend lambda
+  /{frontendproxy+}:
+    get:
+      responses:
+        "200":
+          description: Successful operation
+      x-amazon-apigateway-integration:
+        credentials: "${iam_role_arn}"
+        uri: "${frontend_arn}"
+        responses:
+          default:
+            statusCode: "500"
+          200:
+            statusCode: "200"
+          403:
+            statusCode: "403"
+          404:
+            statusCode: "404"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "AWS_PROXY"
+      summary: Frontend lambda
   /api/{proxy+}:
     options:
       summary: CORS support

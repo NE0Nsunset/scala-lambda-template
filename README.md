@@ -20,6 +20,8 @@ to limit the amount of unnecessary dependencies in the AWS jar file.
     lambda-offline/             # Local wiring of above lambda functions into Akka HTTP server for local development
     | -- src/main/public          # static files
     terraform                   # Basic Terraform configuration files, see terraform section below
+    |  -- invocatations/          # directory that houses different terraform instances
+    |       -- example/             # an example invocation, run `terraform init`, `terraform apply`, etc, from here 
     README.md                   # This readme file 
 
 ## SBT Commands
@@ -50,18 +52,25 @@ SBT to re-compile and re-start the web server. The http server is hosted at `htt
 TODO
 
 ## Terraform deployment
-The ./terraform folder contains a basic deploy infrastructure. It is namespaced, so all assets should share a common prefix. 
+The ./terraform folder contains a basic deploy infrastructure. It is namespaced, so all assets should share a common prefix.
+
+An example invocation is located at ./terraform/invocations/example. CD into this directory before running `terraform init`, `terraform apply`, etc. 
 
 This project depends on terraform 11. Version 12 will not work. Install the Terraform CLI through brew via `brew install @terraform0.11`. 
 You'll also need to install AWS CLI and setup credentials, see https://docs.aws.amazon.com/singlesignon/latest/userguide/howtogetcredentials.html
 Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` environment variable to connect. 
 
 ### Deploy
-- After installing Terraform and AWS CLI, cd into the ./terraform config folder, `cd terraform`
-- run the SBT command to compile the frontend and backend, `sbt buildTask`. Terraform will upload the target output files.
-- run `terraform init` to install the required modules
-- run `terraform plan` to build the infrastructure plan. This also gives an opportunity to see what will be built
-- run `terraform apply` to deploy the plan to AWS
+- run the SBT command to compile the frontend and backend from the root directory, `sbt buildTask`.
+- After installing Terraform and AWS CLI, cd into the ./terraform/invocations/example folder, `cd terraform/invocations/example`
+- run `terraform init` from the invocations/example/ folder to install the required modules
+- run `terraform plan` from the invocations/example/ folder to build the infrastructure plan. This also gives an opportunity to see what will be built
+- run `terraform apply` from the invocations/example/ folder to deploy the plan to AWS
+
+#### Deploy Phase 2
+After deploying, one can create a custom api gateway domain and configure the app to use said domain and eliminate the stage prefix. One a domain is setup, 
+simple edit `invocations/example/module.tf` and change `override_api_base` to the domain name (including proto) and change `override_stage_name` from false to empty string.
+Then run `terraform apply` again. 
 
 ### What gets deployed?
 - API Gateway
@@ -70,9 +79,9 @@ Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` envi
 - Iam roles
 - Dynamo table
 
-When terraform finishes the output will contain a url for the backend api and frontend. Copy/paste the frontend url into a browser to see your deployment.
+When terraform finishes, the output will contain a url for the backend api and frontend. Copy/paste the frontend url into a browser to see your deployment.
 
 ### Cleanup
-To remove all assets created during deploy run `terraform destroy`. Please note, this starter template stores terraform state locally in the ./terraform/ folder.
+To remove all assets created during deploy run `terraform destroy` from the invocations/example folder. Please note, this starter template stores terraform state locally.
 You will need this state to perform changes or remove the assets. If the state files are erased, Terraform will essentially start from scratch. 
 

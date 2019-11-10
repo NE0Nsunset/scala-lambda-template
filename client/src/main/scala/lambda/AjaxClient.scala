@@ -17,7 +17,7 @@ class AjaxClient
                             upickle.default.Reader,
                             upickle.default.Writer] {
   val clientConfig = bind[ClientConfig]
-  val backendUrl: String = clientConfig.backendApiUrl
+  val backendUrl: String = clientConfig.getBackendApiUrl
 
   override def doCall(req: Request): Future[ujson.Value] = {
     Ajax

@@ -1,1 +1,1 @@
-window.clientConfig = {"backendApi": "${api_backend_url}/api/"}
+window.clientConfig = {"backendApi": "${api_backend_url}/api/", "staticUrl": "${static_url}", "apiStage": "${stage_prefix}"};

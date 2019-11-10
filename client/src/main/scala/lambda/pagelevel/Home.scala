@@ -1,17 +1,19 @@
 package lambda.pagelevel
 
 import com.thoughtworks.binding.{Binding, FutureBinding, dom}
-import lambda.{SharedClass, UsesAjaxClient}
+import lambda.{ClientConfig, SharedClass, UsesAjaxClient}
 import lambda.api.{AnotherApiExample, BlogApi, SharedApi}
 import org.scalajs.dom.document
 import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
 import com.thoughtworks.binding.Binding.Var
 import lambda.models.{BlogItem, Movie}
+
 import scala.util.{Failure, Success}
 import lambda.serialization.Picklers._
 import wvlet.airframe._
 import autowire._
 import lambda.routing.{RouteName, UsesSimpleRouter}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scalaz.std.option._
 import scalaz.std.list._
@@ -23,6 +25,9 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
   val latestBlogs: FutureBinding[List[BlogItem]] = FutureBinding {
     ajaxClient[BlogApi].getNBlogs(10).call()
   }
+
+  val clientConfig = bind[ClientConfig]
+  val staticUrl = clientConfig.getStaticUrl
 
   @dom def banner: Binding[Node] = {
     <div id="index-banner" class="parallax-container" style="height:350px;">
@@ -37,7 +42,7 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
           <br /><br />
         </div>
       </div>
-      <div class="parallax"><img src="/static/img/traintracks.jpg" alt="Unsplashed background img 1" style="transform: translate3d(-50%, 240.88px, 0px); opacity: 1;" /></div>
+      <div class="parallax"><img src={s"${staticUrl}static/img/traintracks.jpg"} alt="Unsplashed background img 1" style="transform: translate3d(-50%, 240.88px, 0px); opacity: 1;" /></div>
     </div>
   }
 

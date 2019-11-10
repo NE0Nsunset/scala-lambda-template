@@ -10,6 +10,7 @@ data "template_file" "open_api_yaml_template" {
   template = "${file("${path.module}/templates/openapi.v3.yaml")}"
   vars = {
     lambda_api_backend_arn = "${aws_lambda_function.lambda-autowire-backend.invoke_arn}"
+    frontend_arn = "${aws_lambda_function.front-end.invoke_arn}"
     aws_region="${var.aws_region}"
     iam_role_arn="${aws_iam_role.api_gatewayrole.arn}"
     api_title="${local.api_title}"

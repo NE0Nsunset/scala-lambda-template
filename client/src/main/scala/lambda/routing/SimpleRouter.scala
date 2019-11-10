@@ -2,10 +2,11 @@ package lambda.routing
 
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding.Var
-import lambda.FrontendApp
+import lambda.{ClientConfig, FrontendApp}
 import lambda.pagelevel.{EmptyPageComponent, PageComponent}
-import org.scalajs.dom.window
+import org.scalajs.dom.{Event, window}
 import wvlet.airframe._
+
 import scala.scalajs.js.Dynamic
 
 /**
@@ -14,6 +15,13 @@ import scala.scalajs.js.Dynamic
   */
 class SimpleRouter {
   type SimpleRoutePageComponent = SimpleRoute[_ <: PageComponent]
+
+  val clientConfig = bind[ClientConfig]
+
+  // react to changes in browser location
+  window.addEventListener("popstate", (event: Event) => {
+    routeFromCurrentLocation
+  })
 
   private var routeList: List[SimpleRoutePageComponent] =
     List.empty[SimpleRoutePageComponent]
@@ -50,11 +58,14 @@ class SimpleRouter {
     // TODO cleanup
     val calculatedPath = {
       val x =
-        s"/${currentRouteOpt.value.map(_.tokenMapToHref(routeProps)).getOrElse("/")}"
+        s"/${currentRouteOpt.value
+          .map(_.tokenMapToHref(routeProps)).getOrElse("/")}"
       if (x.startsWith("//")) x.tail else x
     }
 
-    window.history.pushState(Dynamic.literal(), "", s"$calculatedPath")
+    window.history.pushState(Dynamic.literal(),
+                             "",
+                             s"${clientConfig.getStageName}$calculatedPath")
     currentRouteKeyValues = routeProps
     currentPageComponentOpt.value = currentRouteOpt.value
       .map(_.sessionToComponent(FrontendApp.session))
@@ -62,7 +73,8 @@ class SimpleRouter {
 
   def routeFromCurrentLocation = {
     currentRouteKeyValues = Nil // unset route props
-    val href = window.location.pathname
+    val href =
+      window.location.pathname.replace(clientConfig.getStageName, "")
     val current = routeList.find(_.matches(href))
     currentRouteOpt.value = current
     current foreach { x =>
