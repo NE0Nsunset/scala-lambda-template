@@ -1,11 +1,12 @@
 package lambda.pagelevel
 
-import com.thoughtworks.binding.{Binding, FutureBinding, dom}
+import com.thoughtworks.binding.{Binding, FutureBinding}
 import lambda.UsesAjaxClient
 import lambda.api.BlogApi
 import lambda.routing.UsesSimpleRouter
 import autowire._
 import lambda.serialization.Picklers._
+import org.lrng.binding.html
 import org.scalajs.dom.raw.Node
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -14,7 +15,8 @@ import wvlet.airframe._
 class BlogDetail
     extends PageComponent
     with UsesSimpleRouter
-    with UsesAjaxClient {
+    with UsesAjaxClient
+    with IDEHelpers {
 
   val year =
     simpleRouter.findRouteValue("year").get.toInt
@@ -30,7 +32,7 @@ class BlogDetail
       ajaxClient[BlogApi].findByDateAndSlug(year, month, date, slug).call()
     }
 
-  @dom def render: Binding[Node] = {
+  @html def render: Binding[Node] = {
     <div class="section no-pad-bot" id="index-banner">
       {simpleRouter.currentRouteKeyValues.toString}
       {loadedBlog.bind.toString}

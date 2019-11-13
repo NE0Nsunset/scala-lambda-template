@@ -1,7 +1,7 @@
 package lambda.pagelevel
 
-import com.thoughtworks.binding.dom
+import org.lrng.binding.html
 
 class EmptyPageComponent extends PageComponent {
-  @dom def render = <!-- -->
+  @html def render = <!-- -->
 }

@@ -1,27 +1,25 @@
 package lambda
 
-import com.thoughtworks.binding.{Binding, FutureBinding, dom}
-import org.scalajs.dom.document
-import scala.scalajs.js.annotation.JSExport
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
-import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.scalajs.js
-import autowire._
-import lambda.pagelevel.PageComponent
-import lambda.routing.{RouteName, Routes, SimpleRoute, SimpleRouter}
-import lambda.models.Movie
-import lambda.serialization.Picklers._
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
-import scalaz.std.option._
 import wvlet.airframe._
-import scala.scalajs.js
+import org.scalajs.dom.document
+
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.concurrent.ExecutionContext.Implicits.global
+import autowire._
+import lambda.routing.{RouteName, Routes, SimpleRouter}
+import lambda.serialization.Picklers._
+import scalaz.std.option._
+import com.thoughtworks.binding.Binding
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants}
+import org.lrng.binding.html
+import org.scalajs.dom.raw.{Event, Node}
+import com.thoughtworks.binding.bindable._
 
 /**
   * Entrypoint for scala.binding / scalajs frontend
   */
-object FrontendApp extends js.JSApp {
+@JSExportTopLevel("FrontendApp")
+object FrontendApp {
   val design: Design =
     newDesign
       .bind[ClientConfig].toEagerSingleton
@@ -29,24 +27,22 @@ object FrontendApp extends js.JSApp {
       .bind[AjaxClient].toSingleton
       .bind[Routes].toEagerSingleton
 
-  val session = design.newSession
+  lazy val session = design.newSession
   val builtSession = session.build[FrontendApp]
 
   @JSExport
   def main(): Unit = {
-    dom.render(document.getElementById("lambda-app"), builtSession.appLayout)
-    dom.render(document.getElementById("lambda-app-footer"),
-               builtSession.footer)
+    html.render(document.getElementById("lambda-app").asInstanceOf[Node],
+                builtSession.appLayout)
   }
 }
 
-trait FrontendApp {
-  private val session = bind[Session]
+trait FrontendApp extends IDEHelpers {
   lazy val simpleRouter = bind[SimpleRouter]
-  val clientConfig = bind[ClientConfig]
+  lazy val clientConfig = bind[ClientConfig]
   lazy val ajaxClient = bind[AjaxClient]
 
-  @dom def navBar: Binding[Node] = {
+  @html def navBar: Binding[Node] = {
     document.addEventListener("DOMContentLoaded", (e: Event) => {
       var elems = document.querySelectorAll(".sidenav");
       var instances = scalajs.js.Dynamic.global.M.Sidenav.init(elems, {})
@@ -99,9 +95,9 @@ trait FrontendApp {
     </nav>
   }
 
-  @dom def footer: Binding[Node] = {
+  @html def footer: Binding[Node] = {
     <footer class="page-footer blue-grey darken-2" style="padding-top:0px;">
-      <div class="footer-copyright">
+      <div class="footer-copyright" onclick={(_:Event) => println("daaaa")}>
         <div class="container">
           © 2019 Josh Kapple
           <a class="grey-text text-lighten-4 right" href="https://www.joshkapple.com" target="_blank">JoshKapple.com</a>
@@ -110,11 +106,11 @@ trait FrontendApp {
     </footer>
   }
 
-  @dom def appLayout: Binding[BindingSeq[Node]] = {
-    Constants(
-      navBar.bind,
-      simpleRouter.currentPageComponentOrEmpty.bind.render.bind
-    )
+  @html def appLayout: Binding[BindingSeq[Node]] = Binding apply {
+    List(
+      navBar,
+      simpleRouter.currentPageComponentOrEmpty.bind.render
+    ).bindSeq
   }
 
   simpleRouter.routeFromCurrentLocation

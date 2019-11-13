@@ -1,10 +1,16 @@
 import sbtcrossproject.{CrossType, crossProject}
 import com.typesafe.sbt.packager.archetypes._
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 
-lazy val scalaV = "2.12.6"
+lazy val scalaV = "2.12.10"
 val airframeVersion = "0.45"
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint") // AWS only supports Java 8
+
+resolvers += Resolver.sonatypeRepo("releases")
+
 
 val serverDeps = Seq(
     "software.amazon.awssdk" % "dynamodb" % "2.7.26",
@@ -67,7 +73,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   settings(scalaVersion := scalaV).
   jsConfigure(_ enablePlugins ScalaJSWeb)
   .settings(libraryDependencies ++= Seq(
-      "org.scala-js" %% "scalajs-stubs" % "0.6.22" % "provided",
+      "org.scala-js" %% "scalajs-stubs" % "0.6.29" % "provided",
       "org.scalatest" %% "scalatest" % "3.0.3" % "test",
       "com.typesafe.play" %% "play-json" % "2.6.9",
       "com.beachape" %%% "enumeratum" % "1.5.12",
@@ -79,18 +85,17 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
 
 lazy val client = (project in file("client")).settings(
     scalaVersion := scalaV,
-    scalaJSUseMainModuleInitializer := true,
-    scalacOptions ++= Seq("-Xmax-classfile-name","78","-Xxml:coalescing"),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    scalacOptions ++= Seq("-Xxml:coalescing", "-P:scalajs:sjsDefinedByDefault"), //, "-Ymacro-debug-lite")
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
     libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "0.9.1",
+        "org.scala-js" %%% "scalajs-dom" % "0.9.7",
         "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+        "org.lrng.binding" %%% "html" % "1.0.2",
+        "com.thoughtworks.binding" %%% "futurebinding" % "11.8.1",
         "com.thoughtworks.binding" %%% "dom" % "latest.release",
-        "com.thoughtworks.binding" %%% "futurebinding" % "latest.release",
-        "fr.hmil" %%% "roshttp" % "2.0.2",
+        "org.lrng.binding" %%% "html" % "1.0.2",
         "com.typesafe.play" %% "play-json" % "2.6.9",
         "com.lihaoyi" %%% "autowire" % "0.2.6",
-        "org.scala-js" %% "scalajs-stubs" % "0.6.22" % "provided",
         "org.webjars" %% "webjars-play" % "2.6.1",
         "org.wvlet.airframe" %%% "airframe" % airframeVersion,
         "com.lihaoyi" %%% "upickle" % "0.7.5"

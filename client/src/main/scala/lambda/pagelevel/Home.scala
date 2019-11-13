@@ -1,26 +1,27 @@
 package lambda.pagelevel
 
-import com.thoughtworks.binding.{Binding, FutureBinding, dom}
-import lambda.{ClientConfig, SharedClass, UsesAjaxClient}
-import lambda.api.{AnotherApiExample, BlogApi, SharedApi}
-import org.scalajs.dom.document
-import org.scalajs.dom.raw.{Event, HTMLInputElement, Node}
-import com.thoughtworks.binding.Binding.Var
-import lambda.models.{BlogItem, Movie}
-
-import scala.util.{Failure, Success}
+import com.thoughtworks.binding.{Binding, FutureBinding}
+import lambda.{ClientConfig, IDEHelpers, UsesAjaxClient}
+import lambda.api.BlogApi
+import org.scalajs.dom.raw.{Event, Node}
+import lambda.models.BlogItem
+import scala.util.Success
 import lambda.serialization.Picklers._
 import wvlet.airframe._
 import autowire._
 import lambda.routing.{RouteName, UsesSimpleRouter}
-
+import org.lrng.binding.html
+import com.thoughtworks.binding.bindable._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scalaz.std.option._
 import scalaz.std.list._
-
 import scala.concurrent.Future
 
-class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
+class Home
+    extends PageComponent
+    with UsesAjaxClient
+    with UsesSimpleRouter
+    with IDEHelpers {
 
   val latestBlogs: FutureBinding[List[BlogItem]] = FutureBinding {
     ajaxClient[BlogApi].getNBlogs(10).call()
@@ -29,7 +30,7 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
   val clientConfig = bind[ClientConfig]
   val staticUrl = clientConfig.getStaticUrl
 
-  @dom def banner: Binding[Node] = {
+  @html def banner: Binding[Node] = {
     <div id="index-banner" class="parallax-container" style="height:350px;">
       <div class="section no-pad-bot">
         <div class="container">
@@ -46,7 +47,7 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
     </div>
   }
 
-  @dom def bulletPoints: Binding[Node] = {
+  @html def bulletPoints: Binding[Node] = {
     <div class="container">
       <div class="row">
         <div class="col s12 m4">
@@ -85,7 +86,7 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
     </div>
   }
 
-  @dom def blogTitle(blogItems: List[BlogItem]): Binding[Node] = {
+  @html def blogTitle(blogItems: List[BlogItem]): Binding[Node] = {
     <ul>
       {blogItems map { blogItem =>
       <li>
@@ -98,7 +99,7 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
     </ul>
   }
 
-  @dom def showMeTheCode: Binding[Node] = {
+  @html def showMeTheCode: Binding[Node] = {
     <div class="container">
         <div class="section">
           <div class="row">
@@ -115,23 +116,17 @@ class Home extends PageComponent with UsesAjaxClient with UsesSimpleRouter {
       </div>
   }
 
-  @dom def render: Binding[Node] =
-    <div>
-      {banner.bind}
-      {bulletPoints.bind}
-      {showMeTheCode.bind}
-      <div class="no-pad-bot" id="index-banner">
-        <div class="container">
-          <div class="row">
-          </div>
-          <div class="row">
-            {latestBlogs.bind match {
-            case Some(Success(xs @ head :: tail)) => blogTitle(xs).bind
-            case Some(Success(Nil)) => <!-- -->
-            case _ => <p>loading ...</p>
-            }}
-          </div>
+  @html def render: Binding[Node] =
+    Binding apply {
+      <div>
+      {banner.bind}{bulletPoints.bind}{showMeTheCode.bind}<div class="no-pad-bot" id="index-banner">
+      <div class="container">
+        <div class="row">
+        </div>
+        <div class="row">
         </div>
       </div>
     </div>
+    </div>
+    }.bind
 }

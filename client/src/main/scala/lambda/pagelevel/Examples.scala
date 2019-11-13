@@ -207,8 +207,8 @@ class Examples extends PageComponent with UsesAjaxClient {
             <p class="light">Finally, the last example shows the results of retrieving movie items from DynamoDb. The form to submit has been disabled. Movie records should show below.</p>
           </div>
           {
-            //movieForm.bind
-            <!-- form disable, uncomment in source code to try locally -->
+          //movieForm.bind
+          <!-- form disable, uncomment in source code to try locally -->
           }
         </div>
       </div>
@@ -221,11 +221,11 @@ class Examples extends PageComponent with UsesAjaxClient {
             <p>{movie.description}</p>
             <img src={movie.thumbnail} style="width:200px;"></img>
           </div>
-          }}
+        }}
           {if (moviesLoaded.bind.isEmpty)
-            <p>No movies loaded in database</p>
-          else
-            <!-- -->
+          <p>No movies loaded in database</p>
+        else
+          <!-- -->
           }
         </div>
       </div>
