@@ -1,5 +1,5 @@
 package lambda.pagelevel
-import com.thoughtworks.binding.{Binding, FutureBinding, dom}
+import com.thoughtworks.binding.{Binding, FutureBinding}
 import org.scalajs.dom.raw.{Event, HTMLFormElement, HTMLInputElement, Node}
 import autowire._
 import com.thoughtworks.binding.Binding.{Var, Vars}
@@ -7,6 +7,7 @@ import lambda.{SharedClass, UsesAjaxClient}
 import lambda.api.{AnotherApiExample, MovieApiWithDynamo, SharedApi}
 import lambda.models.{Movie, MovieItem}
 import lambda.serialization.Picklers._
+import org.lrng.binding.html
 import org.scalajs.dom.document
 import scalaz.std.list._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,8 +18,10 @@ import scalaz.std.option._
 import scalaz.std.list._
 
 class Examples extends PageComponent with UsesAjaxClient {
-  val simpleApiFuture: Var[Option[FutureBinding[SharedClass]]] = Var(None)
-  val movieApiExample: Var[Option[FutureBinding[Option[Movie]]]] = Var(None)
+  val simpleApiFuture: Var[FutureBinding[SharedClass]] = Var(
+    FutureBinding(Future { SharedClass("", "") }))
+  val movieApiExample: Var[FutureBinding[Option[Movie]]] = Var(
+    FutureBinding(Future { None }))
   val moviesLoaded: Vars[MovieItem] = Vars.empty[MovieItem]
 
   val loadMovies = FutureBinding {
@@ -29,19 +32,21 @@ class Examples extends PageComponent with UsesAjaxClient {
     }
   }
 
-  @dom val simpleApiIsLoading: Binding[Boolean] =
-    simpleApiFuture.bind.map(_.bind) match {
-      case Some(Some(Success(_))) | None => false
-      case Some(None)                    => true
-      case Some(Some(Failure(_)))        => false
+  @html def simpleApiIsLoading: Binding[Boolean] = Binding apply {
+    simpleApiFuture.bind.bind match {
+      case Some(Success(_)) | None => false
+      case None                    => true
+      case Some(Failure(_))        => false
     }
+  }
 
-  @dom val movieApiIsLoading: Binding[Boolean] =
-    movieApiExample.bind.map(_.bind) match {
-      case Some(Some(Success(_))) | None => false
-      case Some(None)                    => true
-      case Some(Some(Failure(_)))        => false
+  @html def movieApiIsLoading: Binding[Boolean] = Binding apply {
+    movieApiExample.bind.bind match {
+      case Some(Success(_)) | None => false
+      case None                    => true
+      case Some(Failure(_))        => false
     }
+  }
 
   def handleSubmit(e: Event) = {
     e.preventDefault()
@@ -68,17 +73,17 @@ class Examples extends PageComponent with UsesAjaxClient {
     val f = ajaxClient[SharedApi]
       .doThing(n, d)
       .call()
-    simpleApiFuture.value = Some(FutureBinding(f))
+    simpleApiFuture.value = FutureBinding(f)
   }
 
   def sendMovieApiExampleRequest(): Unit = {
     val movieTitle: String =
       document.getElementById("movieTitle").asInstanceOf[HTMLInputElement].value
     val f = ajaxClient[AnotherApiExample].findMovieByName(movieTitle).call()
-    movieApiExample.value = Some(FutureBinding(f))
+    movieApiExample.value = FutureBinding(f)
   }
 
-  @dom def movieForm: Binding[Node] =
+  @html def movieForm: Binding[Node] =
     <div class="row">
       <form class="col s12" onsubmit={e: Event => handleSubmit(e)}>
         <div class="row">
@@ -109,7 +114,7 @@ class Examples extends PageComponent with UsesAjaxClient {
       </form>
     </div>
 
-  @dom def simpleExampleRender: Binding[Node] =
+  @html def simpleExampleRender: Binding[Node] =
     <div class="container">
       <div class="row">
         <div class="col s12 m6">
@@ -140,9 +145,9 @@ class Examples extends PageComponent with UsesAjaxClient {
               <!-- -->
             }
             {
-            simpleApiFuture.bind.map(_.bind) match {
-              case Some(Some(Success(sharedClass))) => <div>{sharedClass.toString}</div>
-              case _ => <div>>{simpleApiFuture.bind.map(_.bind).toString}</div>
+            simpleApiFuture.bind.bind match {
+              case Some(Success(sharedClass)) => <div>{sharedClass.toString}</div>
+              case _ => <div>>{simpleApiFuture.bind.bind.toString}</div>
             }
             }
           </div>
@@ -150,7 +155,7 @@ class Examples extends PageComponent with UsesAjaxClient {
       </div>
     </div>
 
-  @dom def movieApiExampleRender: Binding[Node] =
+  @html def movieApiExampleRender: Binding[Node] =
     <div class="container">
       <div class="row">
 
@@ -183,22 +188,23 @@ class Examples extends PageComponent with UsesAjaxClient {
             <!-- -->
           }
           {
-          movieApiExample.bind.map(_.bind) match {
-            case Some(Some(Success(Some(movie)))) =>
+          movieApiExample.bind.bind match {
+            case Some(Success(Some(movie))) =>
               <div>
                 {movie.title}<br />
                 {movie.year.toString}<br />
                 <p>{movie.description}</p>
                 <p><img src={movie.thumbnail}/></p>
               </div>
-            case _ => <div>>{movieApiExample.bind.map(_.bind).toString}</div>
+            case _ => <div>>{movieApiExample.bind.bind
+              .toString}</div>
           }}
 
         </div>
       </div>
     </div>
 
-  @dom def movieApiWithDynamoExample: Binding[Node] = {
+  @html def movieApiWithDynamoExample: Binding[Node] = {
     <div class="container">
       <div class="row">
         <div class="col s12">
@@ -232,7 +238,7 @@ class Examples extends PageComponent with UsesAjaxClient {
     </div>
   }
 
-  @dom override def render: Binding[Node] = {
+  @html override def render: Binding[Node] = {
     <div class="section no-pad-bot" id="index-banner">
       {simpleExampleRender.bind}
       <br/><br/>

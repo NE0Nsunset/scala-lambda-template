@@ -22,9 +22,9 @@ val serverDeps = Seq(
 )
 
 lazy val root = Project(id = "lambda-scala-function-root",
-    base = file(".")).aggregate(lambda,lambdaOffline,client).settings(
+    base = file(".")).settings(
     run := {
-        (run in lambdaOffline in Compile).evaluated
+      (run in lambdaOffline in Compile).evaluated
     }
 ).disablePlugins(RevolverPlugin)
 
@@ -46,13 +46,13 @@ lazy val lambda = (project in file("lambda")).
   assemblyOutputPath in assemblyPackageDependency := {
       file("lambda/target/scala-2.12/aws_layer/java/lib/awsFatJarDependency.jar") // We're relying on terraform to zip this up in the directory structure AWS prefers :)
     }
-  ).dependsOn(sharedJvm).aggregate(sharedJvm).disablePlugins(RevolverPlugin)
+  ).dependsOn(sharedJvm).disablePlugins(RevolverPlugin)
 
 lazy val lambdaOffline = (project in file("lambda-offline")).settings(
     scalaJSProjects := Seq(client),
-    pipelineStages in Assets := Seq(scalaJSPipeline),
+    pipelineStages in Assets := Seq(scalaJSDev),
     WebKeys.packagePrefix in Assets := "public/",
-    compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
+    compile in Compile := ((compile in Compile) dependsOn scalaJSDev).value,
     managedClasspath in Runtime += (packageBin in Assets).value,
     name := "lambda-offline",
     version := "1.0",
@@ -64,8 +64,8 @@ lazy val lambdaOffline = (project in file("lambda-offline")).settings(
         "org.scalactic" %% "scalactic" % "3.0.8",
         "org.scalatest" %% "scalatest" % "3.0.8" % "test"
     ),
-    mainClass in Compile := Some("lambda.WebServer")
-).enablePlugins(SbtWeb).dependsOn(lambda, sharedJvm).aggregate(sharedJvm)
+    mainClass in Compile := Some("lambda.WebServer"),
+).enablePlugins(SbtWeb).dependsOn(lambda, sharedJvm)
 
 lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -100,7 +100,7 @@ lazy val client = (project in file("client")).settings(
         "org.wvlet.airframe" %%% "airframe" % airframeVersion,
         "com.lihaoyi" %%% "upickle" % "0.7.5"
     )
-).enablePlugins(ScalaJSPlugin, ScalaJSWeb).dependsOn(sharedJs).aggregate(sharedJs).disablePlugins(RevolverPlugin)
+).enablePlugins(ScalaJSPlugin, ScalaJSWeb).dependsOn(sharedJs).disablePlugins(RevolverPlugin)
 
 
 lazy val sharedJvm = shared.jvm

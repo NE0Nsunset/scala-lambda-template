@@ -30,7 +30,7 @@ After starting sbt from the project root, use the following commands to:
 - Compile frontend              - `client/fastOptJS` or `client/fullOptJS` 
                                   (local is wired for fastOpt while Terraform deploy uses fullOpt)
 - Compile backend               - `sbt lambda/assembly`
-- Run local development server  - `~reStart` 
+- Run local development server  - `~lambdaOffline/reStart` 
                                   This starts a continuous compile, meaning any changes in project folders will recompile and restart the webserver
 
 ## DynamoDB

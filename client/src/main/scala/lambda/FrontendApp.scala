@@ -34,6 +34,8 @@ object FrontendApp {
   def main(): Unit = {
     html.render(document.getElementById("lambda-app").asInstanceOf[Node],
                 builtSession.appLayout)
+    html.render(document.getElementById("lambda-app-footer").asInstanceOf[Node],
+                builtSession.footer)
   }
 }
 
@@ -42,13 +44,14 @@ trait FrontendApp extends IDEHelpers {
   lazy val clientConfig = bind[ClientConfig]
   lazy val ajaxClient = bind[AjaxClient]
 
-  @html def navBar: Binding[Node] = {
-    document.addEventListener("DOMContentLoaded", (e: Event) => {
-      var elems = document.querySelectorAll(".sidenav");
-      var instances = scalajs.js.Dynamic.global.M.Sidenav.init(elems, {})
-    })
+  @html def navBar: Binding[Node] =
+    Binding apply {
+      document.addEventListener("DOMContentLoaded", (e: Event) => {
+        var elems = document.querySelectorAll(".sidenav");
+        var instances = scalajs.js.Dynamic.global.M.Sidenav.init(elems, {})
+      })
 
-    <nav class="blue-grey darken-2" data:role="navigation">
+      <nav class="blue-grey darken-2" data:role="navigation">
       <div class="nav-wrapper container-wide">
         <div class="row">
           <div class="col s12 m3">
@@ -93,11 +96,11 @@ trait FrontendApp extends IDEHelpers {
         </li>
       </ul>
     </nav>
-  }
+    }.bind
 
   @html def footer: Binding[Node] = {
     <footer class="page-footer blue-grey darken-2" style="padding-top:0px;">
-      <div class="footer-copyright" onclick={(_:Event) => println("daaaa")}>
+      <div class="footer-copyright">
         <div class="container">
           © 2019 Josh Kapple
           <a class="grey-text text-lighten-4 right" href="https://www.joshkapple.com" target="_blank">JoshKapple.com</a>

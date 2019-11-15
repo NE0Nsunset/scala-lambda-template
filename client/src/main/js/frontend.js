@@ -23,6 +23,7 @@ exports.handler = (event, context, callback) => {
             <script type="text/javascript" src="${STATIC_URL}/js/materialize.min.js"></script>
             <script type="text/javascript" src="${STATIC_URL}/client-jsdeps.js"></script>
             <script type="text/javascript" src="${STATIC_URL}/client-opt.js"></script>
+            <script>FrontendApp.main()</script>
             </body>
         </html>
       `;
