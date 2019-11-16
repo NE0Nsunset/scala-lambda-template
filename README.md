@@ -1,5 +1,5 @@
 # SCALA LAMBDA BINDING TEMPLATE
-Basic structure for a [Binding.scala](https://github.com/ThoughtWorksInc/Binding.scala) frontend powered by scala -> java AWS Lambda functions.
+Basic structure for a [Binding.scala](https://github.com/ThoughtWorksInc/Binding.scala), [org.lrng.binding](https://github.com/GlasslabGames/html.scala) frontend powered by scala -> java AWS Lambda functions.
 This project uses [Autowire](https://github.com/lihaoyi/autowire) to bind a single AWS Lambda function to automatically absorb all frontend requests and direct
 them to their appropriate api calls. Additional frontend request endpoints would not require additional setup in AWS beyond the first lambda.
 
@@ -15,6 +15,8 @@ to limit the amount of unnecessary dependencies in the AWS jar file.
 
 ## Project Structure
     client/                     # Binding.scala / scalajs frontend codebase
+    | -- scala/                   # scalajs source code
+    | -- js/                      # AWS frontend lambda source
     shared/                     # Shared objects between client and server
     lambda/                     # AWS Lambda functions
     lambda-offline/             # Local wiring of above lambda functions into Akka HTTP server for local development
