@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import lambda.models.{BlogItem, MovieItem}
 import lambda.seed.SeedObjects
-
+import lambda.serialization.DynamoItemConverters._
 trait LocalDependencies {
   this: LambdaDependencies =>
   override val config = ConfigFactory.load("local")

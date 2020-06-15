@@ -5,6 +5,7 @@ import lambda.service.MovieService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
+import lambda.serialization.DynamoItemConverters._
 
 class MovieApiWithDynamoImpl(movieService: MovieService)
     extends MovieApiWithDynamo {

@@ -17,6 +17,7 @@ to limit the amount of unnecessary dependencies in the AWS jar file.
     client/                     # Binding.scala / scalajs frontend codebase
     | -- scala/                   # scalajs source code
     | -- js/                      # AWS frontend lambda source
+    docker/                     # Docker files 
     shared/                     # Shared objects between client and server
     lambda/                     # AWS Lambda functions
     lambda-offline/             # Local wiring of above lambda functions into Akka HTTP server for local development
@@ -38,11 +39,15 @@ After starting sbt from the project root, use the following commands to:
 ## DynamoDB
 This template comes with a terraform configuration for a simple DynamoDB table. A basic example of a Dynamo Service exists in lambda.service.MovieServiceImpl.
 
-If using a DynamoDB database, one can run it locally via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
-Note, make sure a AWS default profile exists in ~/.aws/credentials
+Use the included docker/docker-compose.yml to start a local dockerized version of DynamoDB by running `docker-compose up` from the docker folder.
 
+OR
+
+One can install it via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
 After following the install guide:
 - Start DynamoDB - run `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -inMemory` from the folder created during install
+
+Note, make sure a AWS default profile exists in ~/.aws/credentials
 
 DynamoDB shell can be accessed via http://localhost:8000/shell/
 

@@ -25,22 +25,7 @@ case class BlogItem(partKey: String,
                     slug: String,
                     shortDescription: String,
                     body: String)
-    extends DynamoItem {
-
-  override def itemToAttributeMap: util.Map[String, AttributeValue] = {
-    Map(
-      "partKey" -> AttributeValue.builder().s(partKey).build(),
-      "rangeKey" -> AttributeValue.builder().s(rangeKey).build(),
-      "createdAt" -> AttributeValue.builder().s(createdAt).build(),
-      "lastUpdate" -> AttributeValue.builder().s(lastUpdate).build(),
-      "title" -> AttributeValue.builder().s(title).build(),
-      "slug" -> AttributeValue.builder().s(slug).build(),
-      "shortDescription" -> AttributeValue
-        .builder().s(shortDescription).build(),
-      "body" -> AttributeValue.builder().s(body).build(),
-    ).asJava
-  }
-}
+    extends DynamoItem {}
 
 object BlogItem {
   val partitionKey = "blog-item"

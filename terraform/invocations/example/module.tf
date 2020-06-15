@@ -2,7 +2,7 @@ module "scala-lambda" {
   source = "../../../terraform"
 
   aws_region  = "us-west-2"
-  app_version = "v0.2.0"
+  app_version = "v0.2.1"
 
   providers = {                                 #explicit declaration
     aws             = "aws.us-west-2"

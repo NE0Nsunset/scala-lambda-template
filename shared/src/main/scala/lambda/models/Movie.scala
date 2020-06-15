@@ -60,20 +60,7 @@ case class MovieItem(partKey: String,
                      year: Int,
                      description: String,
                      thumbnail: String)
-    extends DynamoItem {
-  def itemToAttributeMap: java.util.Map[String, AttributeValue] = {
-    Map(
-      "partKey" -> AttributeValue.builder().s(partKey).build(),
-      "rangeKey" -> AttributeValue.builder().s(rangeKey).build(),
-      "createdAt" -> AttributeValue.builder().s(createdAt).build(),
-      "lastUpdate" -> AttributeValue.builder().s(lastUpdate).build(),
-      "title" -> AttributeValue.builder().s(title).build(),
-      "year" -> AttributeValue.builder().n(year.toString).build(),
-      "description" -> AttributeValue.builder().s(description).build(),
-      "thumbnail" -> AttributeValue.builder().s(thumbnail).build(),
-    ).asJava
-  }
-}
+    extends DynamoItem {}
 
 object MovieItem {
   val defaultPartKey: String = "movie"
