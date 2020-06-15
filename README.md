@@ -75,9 +75,14 @@ Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` envi
 - run `terraform apply` from the invocations/example/ folder to deploy the plan to AWS
 
 #### Deploy Phase 2
-After deploying, one can create a custom api gateway domain and configure the app to use said domain and eliminate the stage prefix. One a domain is setup, 
-simple edit `invocations/example/module.tf` and change `override_api_base` to the domain name (including proto) and change `override_stage_name` from false to empty string.
+After deploying, one can create a custom api gateway domain and configure the app to use said domain and eliminate the stage prefix. Once a domain is setup, 
+simple edit `invocations/example/main.tf` and change `override_api_base` to the domain name (including proto) and change `override_stage_name` from false to empty string.
 Then run `terraform apply` again. 
+
+#####
+Run S3 sync to copy static assets to the S3 bucket
+- cd into `lambda-offline/src/main/public`
+- run `aws s3 sync . s3://<bucket_name from terraform static_url output>`
 
 ### What gets deployed?
 - API Gateway

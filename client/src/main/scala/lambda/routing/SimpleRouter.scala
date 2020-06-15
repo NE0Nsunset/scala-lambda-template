@@ -52,6 +52,7 @@ class SimpleRouter {
   def changeToRouteByName(routeName: String,
                           routeProps: List[(String, String)] = Nil) = {
     println(s"changing route to $routeName with ${routeProps.toString}")
+    currentPageComponentOpt.value.foreach(_.onDestroy)
 
     currentRouteOpt.value = routeList.find(_.routeName.entryName == routeName)
 
@@ -69,6 +70,7 @@ class SimpleRouter {
     currentRouteKeyValues = routeProps
     currentPageComponentOpt.value = currentRouteOpt.value
       .map(_.sessionToComponent(FrontendApp.session))
+    currentPageComponentOpt.value.foreach(_.onCreate)
   }
 
   def routeFromCurrentLocation = {

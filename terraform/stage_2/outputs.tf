@@ -9,7 +9,3 @@ output "api_gateway_url" {
 output "static_url"{
   value = "Static Url: ${local.static_s3}"
 }
-
-output "version" {
-  value = "Version: ${var.app_version}"
-}

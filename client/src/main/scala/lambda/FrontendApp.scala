@@ -44,13 +44,12 @@ trait FrontendApp extends IDEHelpers {
   lazy val clientConfig = bind[ClientConfig]
   lazy val ajaxClient = bind[AjaxClient]
 
+  document.addEventListener("DOMContentLoaded", (e: Event) => {
+    var instances = scalajs.js.Dynamic.global.window.M.AutoInit()
+  })
+
   @html def navBar: Binding[Node] =
     Binding apply {
-      document.addEventListener("DOMContentLoaded", (e: Event) => {
-        var elems = document.querySelectorAll(".sidenav");
-        var instances = scalajs.js.Dynamic.global.M.Sidenav.init(elems, {})
-      })
-
       <nav class="blue-grey darken-2" data:role="navigation">
       <div class="nav-wrapper container-wide">
         <div class="row">

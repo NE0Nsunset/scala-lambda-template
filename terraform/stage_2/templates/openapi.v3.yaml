@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "${app_version}"
+  version: "v${app_version}"
   title: "${api_title}"
 paths:
   /:

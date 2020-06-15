@@ -37,41 +37,41 @@ data "template_file" "dynamo_policy" {
   template = "${file("${path.module}/templates/lambda_policy.json")}"
 
   vars {
-    dynamodb_table_arn = "${aws_dynamodb_table.lambda-scala-table.arn}"
+    dynamodb_table_arn = "${var.dynamodb_arn}"
   }
 }
 
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = "${data.aws_iam_policy_document.lambda.json}"
-  name = "${local.application-identity}-lambdaRole"
+  name = "${var.application-identity}-lambdaRole"
 }
 
 resource "aws_iam_role" "api_gatewayrole" {
   assume_role_policy = "${data.aws_iam_policy_document.api_gateway.json}"
-  name = "${local.application-identity}-apiGatewayRole"
+  name = "${var.application-identity}-apiGatewayRole"
 }
 
 resource "aws_iam_policy" "lambda_dynamo" {
   policy = "${data.template_file.dynamo_policy.rendered}"
-  name = "${local.application-identity}_lambda_dynamo"
-  path = "/${local.application_prefix}/"
+  name = "${var.application-identity}_lambda_dynamo"
+  path = "/${var.application_prefix}/"
 }
 
 resource "aws_iam_policy" "api_gateway" {
   policy = "${data.template_file.gateway_policy.rendered}"
-  name = "${local.application-identity}_api_gateway"
-  path = "/${local.application_prefix}/"
+  name = "${var.application-identity}_api_gateway"
+  path = "/${var.application_prefix}/"
 
 }
 
 resource "aws_iam_policy_attachment" "api-gateway" {
-  name = "${local.application-identity}-api-gateway-attach-role"
+  name = "${var.application-identity}-api-gateway-attach-role"
   roles = ["${aws_iam_role.api_gatewayrole.name}"]
   policy_arn = "${aws_iam_policy.api_gateway.arn}"
 }
 
 resource "aws_iam_policy_attachment" "lambda" {
-  name = "${local.application-identity}-lambda-attach-role"
+  name = "${var.application-identity}-lambda-attach-role"
   roles = ["${aws_iam_role.lambda_role.name}"]
   policy_arn = "${aws_iam_policy.lambda_dynamo.arn}"
 }
