@@ -1,13 +1,13 @@
 locals {
-  api_title = "JoshKapple.com"
-  api_description = "JoshKapple.com template"
+  api_title = "scala-lambda-template"
+  api_description = "API for scala-lambda-template"
 
   lambda_source_hash = "${base64sha256(file(local.lambda_payload_filename))}"
   front_end_source_hash = "${base64sha256(file(local.frontend_lambda_file))}"
 
-  lambda_payload_filename = "${"${path.root}/../../../lambda/target/scala-2.12/lambda-assembly-1.0.jar"}"
+  lambda_payload_filename = "${"${var.project-root}/lambda/target/scala-2.12/lambda-assembly-1.0.jar"}"
 
-  frontend_lambda_file = "${"${path.root}/../../../client/src/main/js/handler.js"}"
+  frontend_lambda_file = "${"${var.project-root}/client/src/main/js/handler.js"}"
 
   static_s3 = "https://${aws_s3_bucket.frontend_ui.bucket_domain_name}"
 

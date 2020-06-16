@@ -11,3 +11,5 @@ variable "dynamodb_arn" {}
 variable "application_prefix" {}
 variable "application_identity" {}
 variable "application-identity" {}
+
+variable "project-root" {}

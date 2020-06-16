@@ -21,4 +21,6 @@ module "scala-lambda-stage-2" {
   application_identity = "${local.application_identity}"
   application-identity = "${local.application-identity}"
   application_prefix = "${local.application_prefix}"
+
+  project-root = "${path.root}/../../../"
 }
