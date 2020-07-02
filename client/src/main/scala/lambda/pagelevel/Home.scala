@@ -43,7 +43,7 @@ class Home
           <br /><br />
         </div>
       </div>
-      <div class="parallax"><img src={s"${staticUrl}static/img/traintracks.jpg"} alt="Unsplashed background img 1" style="transform: translate3d(-50%, 240.88px, 0px); opacity: 1;" /></div>
+      <div class="parallax"><img src={s"${staticUrl}img/traintracks.jpg"} alt="Unsplashed background img 1" style="transform: translate3d(-50%, 240.88px, 0px); opacity: 1;" /></div>
     </div>
   }
 

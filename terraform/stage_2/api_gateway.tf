@@ -6,6 +6,14 @@ resource "aws_lambda_permission" "invoke-scala-api" {
   source_arn = "${aws_api_gateway_deployment.a.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "invoke-frontend" {
+  statement_id = "AllowInvokeFrontend"
+  action = "lambda:InvokeFunction"
+  principal = "apigateway.amazonaws.com"
+  function_name = "${aws_lambda_function.front-end.arn}"
+  source_arn = "${aws_api_gateway_deployment.a.execution_arn}/*/*"
+}
+
 data "template_file" "open_api_yaml_template" {
   template = "${file("${path.module}/templates/openapi.v3.yaml")}"
   vars = {
@@ -20,7 +28,7 @@ data "template_file" "open_api_yaml_template" {
 
 resource "aws_api_gateway_rest_api" "rest_api" {
   body = "${data.template_file.open_api_yaml_template.rendered}"
-  name = "${local.application_identity}_gateway"
+  name = "${var.application_identity}_gateway"
   description = "${local.api_description}"
 
   endpoint_configuration {
@@ -33,4 +41,5 @@ resource "aws_api_gateway_deployment" "a" {
   stage_name = "a"
 
   stage_description = "${md5(file("${path.module}/templates/openapi.v3.yaml"))}" // actually trigger deploy on api definition change
+
 }

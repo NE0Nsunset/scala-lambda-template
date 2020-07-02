@@ -17,6 +17,7 @@ to limit the amount of unnecessary dependencies in the AWS jar file.
     client/                     # Binding.scala / scalajs frontend codebase
     | -- scala/                   # scalajs source code
     | -- js/                      # AWS frontend lambda source
+    docker/                     # Docker files 
     shared/                     # Shared objects between client and server
     lambda/                     # AWS Lambda functions
     lambda-offline/             # Local wiring of above lambda functions into Akka HTTP server for local development
@@ -38,11 +39,15 @@ After starting sbt from the project root, use the following commands to:
 ## DynamoDB
 This template comes with a terraform configuration for a simple DynamoDB table. A basic example of a Dynamo Service exists in lambda.service.MovieServiceImpl.
 
-If using a DynamoDB database, one can run it locally via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
-Note, make sure a AWS default profile exists in ~/.aws/credentials
+Use the included docker/docker-compose.yml to start a local dockerized version of DynamoDB by running `docker-compose up` from the docker folder.
 
+OR
+
+One can install it via https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html.
 After following the install guide:
 - Start DynamoDB - run `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -inMemory` from the folder created during install
+
+Note, make sure a AWS default profile exists in ~/.aws/credentials
 
 DynamoDB shell can be accessed via http://localhost:8000/shell/
 
@@ -70,9 +75,14 @@ Terraform depends on ~/.aws/credentials being present and the `AWS_PROFILE` envi
 - run `terraform apply` from the invocations/example/ folder to deploy the plan to AWS
 
 #### Deploy Phase 2
-After deploying, one can create a custom api gateway domain and configure the app to use said domain and eliminate the stage prefix. One a domain is setup, 
-simple edit `invocations/example/module.tf` and change `override_api_base` to the domain name (including proto) and change `override_stage_name` from false to empty string.
+After deploying, one can create a custom api gateway domain and configure the app to use said domain and eliminate the stage prefix. Once a domain is setup, 
+simple edit `invocations/example/main.tf` and change `override_api_base` to the domain name (including proto) and change `override_stage_name` from false to empty string.
 Then run `terraform apply` again. 
+
+#####
+Run S3 sync to copy static assets to the S3 bucket
+- cd into `lambda-offline/src/main/public`
+- run `aws s3 sync . s3://<bucket_name from terraform static_url output>`
 
 ### What gets deployed?
 - API Gateway

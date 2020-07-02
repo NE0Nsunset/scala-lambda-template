@@ -20,7 +20,9 @@
     {
       "Action": [
         "logs:CreateLogStream",
-        "logs:PutLogEvents"
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams",
+        "logs:CreateLogGroup"
       ],
       "Resource": "arn:aws:logs:*:*:*",
       "Effect": "Allow"
