@@ -3,21 +3,23 @@ import com.thoughtworks.binding.{Binding, FutureBinding}
 import org.scalajs.dom.raw.{Event, HTMLFormElement, HTMLInputElement, Node}
 import autowire._
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import lambda.{SharedClass, UsesAjaxClient}
+import lambda.{IDEHelpers, SharedClass, UsesAjaxClient}
 import lambda.api.{AnotherApiExample, MovieApiWithDynamo, SharedApi}
 import lambda.models.{Movie, MovieItem}
 import lambda.serialization.Picklers._
 import org.lrng.binding.html
 import org.scalajs.dom.document
 import scalaz.std.list._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import wvlet.airframe._
+
 import scala.util.{Failure, Success}
 import scalaz.std.option._
 import scalaz.std.list._
 
-class Examples extends PageComponent with UsesAjaxClient {
+class Examples extends PageComponent with UsesAjaxClient with IDEHelpers {
   val simpleApiFuture: Var[FutureBinding[SharedClass]] = Var(
     FutureBinding(Future { SharedClass("", "") }))
   val movieApiExample: Var[FutureBinding[Option[Movie]]] = Var(
@@ -220,7 +222,7 @@ class Examples extends PageComponent with UsesAjaxClient {
       </div>
       <div class="row">
         <div class="col s12">
-          {moviesLoaded.bind.toList map { movie =>
+          {moviesLoaded.map { movie: MovieItem =>
           <div class="col s4">
             <p>{movie.title}</p>
             <p>{movie.year.toString}</p>
@@ -228,7 +230,7 @@ class Examples extends PageComponent with UsesAjaxClient {
             <img src={movie.thumbnail} style="width:200px;"></img>
           </div>
         }}
-          {if (moviesLoaded.bind.isEmpty)
+          {if (moviesLoaded.isEmpty.bind)
           <p>No movies loaded in database</p>
         else
           <!-- -->

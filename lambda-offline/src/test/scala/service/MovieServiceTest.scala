@@ -9,6 +9,7 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import lambda.serialization.DynamoItemConverters._
 
 class MovieServiceTest extends TestBase with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
@@ -22,31 +23,31 @@ class MovieServiceTest extends TestBase with BeforeAndAfterEach {
     Await.result(dynamoClient.destroyTable, Duration.create(60, "seconds"))
   }
 
-  describe("MovieService Tests") {
-
-    it("Should connect to dynamo") {
-      FutureConverters.toScala(
-        dynamoClient.awsClient
-          .listTables(ListTablesRequest.builder().build)) map { f =>
-        println(f.toString)
-        assert(true)
-      }
-    }
-
-    it("Should be able to insert and retrieve an item") {
-      val movieItem = MovieItem.fromMovie(Movie.SimpleMovieDb.movies.head)
-
-      for {
-        result <- movieDynamoService.put(movieItem)
-        getResult <- movieDynamoService.findItemByCompositeKey(
-          movieItem.partKey,
-          movieItem.rangeKey)
-      } yield {
-        println(getResult.toString)
-        println(result.toString)
-        assert(true)
-      }
-    }
+//  describe("MovieService Tests") {
+//
+//    it("Should connect to dynamo") {
+//      FutureConverters.toScala(
+//        dynamoClient.awsClient
+//          .listTables(ListTablesRequest.builder().build)) map { f =>
+//        println(f.toString)
+//        assert(true)
+//      }
+//    }
+//
+//    it("Should be able to insert and retrieve an item") {
+//      val movieItem = MovieItem.fromMovie(Movie.SimpleMovieDb.movies.head)
+//
+//      for {
+//        result <- movieDynamoService.put(movieItem)
+//        getResult <- movieDynamoService.findItemByCompositeKey(
+//          movieItem.partKey,
+//          movieItem.rangeKey)
+//      } yield {
+//        println(getResult.toString)
+//        println(result.toString)
+//        assert(true)
+//      }
+//    }
 
 //    it("Should return none when no item exists for query") {
 //      for {
@@ -76,5 +77,5 @@ class MovieServiceTest extends TestBase with BeforeAndAfterEach {
 //      }
 //    }
 
-  }
+//  }
 }

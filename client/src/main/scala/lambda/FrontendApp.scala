@@ -2,7 +2,6 @@ package lambda
 
 import wvlet.airframe._
 import org.scalajs.dom.document
-
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.concurrent.ExecutionContext.Implicits.global
 import autowire._
@@ -18,7 +17,6 @@ import com.thoughtworks.binding.bindable._
 /**
   * Entrypoint for scala.binding / scalajs frontend
   */
-@JSExportTopLevel("FrontendApp")
 object FrontendApp {
   val design: Design =
     newDesign
@@ -30,8 +28,8 @@ object FrontendApp {
   lazy val session = design.newSession
   val builtSession = session.build[FrontendApp]
 
-  @JSExport
-  def main(): Unit = {
+  def main(args: Array[String]): Unit = {
+    println("heellll")
     html.render(document.getElementById("lambda-app").asInstanceOf[Node],
                 builtSession.appLayout)
     html.render(document.getElementById("lambda-app-footer").asInstanceOf[Node],
@@ -39,7 +37,7 @@ object FrontendApp {
   }
 }
 
-trait FrontendApp extends IDEHelpers {
+class FrontendApp extends IDEHelpers {
   lazy val simpleRouter = bind[SimpleRouter]
   lazy val clientConfig = bind[ClientConfig]
   lazy val ajaxClient = bind[AjaxClient]
@@ -109,10 +107,10 @@ trait FrontendApp extends IDEHelpers {
   }
 
   @html def appLayout: Binding[BindingSeq[Node]] = Binding apply {
-    List(
+    Constants(
       navBar,
       simpleRouter.currentPageComponentOrEmpty.bind.render
-    ).bindSeq
+    ).bind.map(_.bind)
   }
 
   simpleRouter.routeFromCurrentLocation

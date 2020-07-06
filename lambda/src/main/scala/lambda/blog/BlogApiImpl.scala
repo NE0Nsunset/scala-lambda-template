@@ -1,6 +1,7 @@
-package lambda.api
+package lambda.blog
+
+import lambda.api.BlogApi
 import lambda.models.BlogItem
-import lambda.service.BlogService
 
 import scala.concurrent.Future
 

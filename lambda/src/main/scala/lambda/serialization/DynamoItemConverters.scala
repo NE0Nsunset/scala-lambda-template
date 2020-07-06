@@ -1,6 +1,8 @@
 package lambda.serialization
 
+import lambda.blog.BlogItemBean
 import lambda.models.{BlogItem, DynamoItem, MovieItem}
+import lambda.movie.MovieItemBean
 
 object DynamoItemConverters {
   implicit def dynamoItembean2DynamoItem[T <: DynamoItem](

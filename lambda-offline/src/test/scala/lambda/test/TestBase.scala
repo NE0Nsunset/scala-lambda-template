@@ -2,13 +2,14 @@ package lambda.test
 
 import com.typesafe.config.ConfigFactory
 import lambda.{AWSLogging, LocalDynamoClient}
-import lambda.api.{MovieApiWithDynamo, MovieApiWithDynamoImpl}
+import lambda.api.MovieApiWithDynamo
 import lambda.controller.AutowireServer
-import lambda.service.{MovieService, MovieServiceImpl}
-import org.scalatest.AsyncFunSpec
+import lambda.movie.{MovieApiWithDynamoImpl, MovieService, MovieServiceImpl}
+import org.scalatest.AsyncTestSuite
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TestBase extends AsyncFunSpec {
+class TestBase extends AsyncTestSuite {
   val config = ConfigFactory.load("test")
 
   val tableName = config.getString("dynamo.tableName")

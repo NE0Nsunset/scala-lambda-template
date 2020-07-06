@@ -58,7 +58,6 @@ object WebServer extends App with LambdaDependencies with LocalDependencies {
           |     </script>
           |     <script type="text/javascript" src="/static/js/materialize.min.js"></script>
           |     $scalajsScript
-          |     <script>FrontendApp.main()</script>
           |   </body>
           |  </html>""".stripMargin
 

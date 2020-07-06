@@ -1,11 +1,11 @@
-package lambda.api
+package lambda.movie
 
+import lambda.api.MovieApiWithDynamo
 import lambda.models.MovieItem
-import lambda.service.MovieService
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
 import lambda.serialization.DynamoItemConverters._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class MovieApiWithDynamoImpl(movieService: MovieService)
     extends MovieApiWithDynamo {

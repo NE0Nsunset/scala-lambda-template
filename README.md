@@ -37,7 +37,7 @@ After starting sbt from the project root, use the following commands to:
                                   This starts a continuous compile, meaning any changes in project folders will recompile and restart the webserver
 
 ## DynamoDB
-This template comes with a terraform configuration for a simple DynamoDB table. A basic example of a Dynamo Service exists in lambda.service.MovieServiceImpl.
+This template comes with a terraform configuration for a simple DynamoDB table. A basic example of a Dynamo Service exists in lambda.movie.MovieServiceImpl.
 
 Use the included docker/docker-compose.yml to start a local dockerized version of DynamoDB by running `docker-compose up` from the docker folder.
 

@@ -4,29 +4,25 @@ import com.typesafe.config.ConfigFactory
 import lambda.api.{
   AnotherApiExample,
   AnotherApiExampleImpl,
-  BlogApi,
-  BlogApiImpl,
-  MovieApiWithDynamo,
-  MovieApiWithDynamoImpl,
   SharedApi,
   SharedApiImpl
 }
+import lambda.blog.BlogModule
 import lambda.controller.{AutowireController, AutowireServer}
-import lambda.service.{
-  BlogService,
-  BlogServiceImpl,
-  DynamoClientT,
-  MovieService,
-  MovieServiceImpl
-}
-
+import lambda.movie.MovieModule
+import lambda.service.DynamoClientT
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
+
+trait Module {
+  def autowireRoutesDef: List[AutowireServer#Router] = Nil
+}
 
 /**
   * This trait represents the basic dependencies that Lambda handler
   * needs
   */
-trait LambdaDependencies {
+trait LambdaDependencies extends Module with BlogModule with MovieModule {
   import lambda.serialization.Picklers._
 
   // Implement depending on local webserver or AWS
@@ -36,29 +32,15 @@ trait LambdaDependencies {
 
   lazy val awsLoggingImpl: AWSLogging = new AWSLogging {}
 
-  lazy val movieService: MovieService =
-    new MovieServiceImpl(config, dynamoClient)
-
-  lazy val movieApiWithDynamo: MovieApiWithDynamo =
-    new MovieApiWithDynamoImpl(movieService)
-
-  lazy val blogService: BlogService = new BlogServiceImpl(config, dynamoClient)
-
-  lazy val blogApi: BlogApi = new BlogApiImpl(blogService)
-
   lazy val autowireServer: AutowireServer =
     new AutowireServer(awsLoggingImpl)
 
-  /**
-    * Bind API contracts to their implementations here for Autowire
-    */
-  val autowireRoutes = List(
-    autowireServer.route[SharedApi](SharedApiImpl),
-    autowireServer.route[AnotherApiExample](AnotherApiExampleImpl),
-    autowireServer.route[MovieApiWithDynamo](movieApiWithDynamo),
-    autowireServer.route[BlogApi](blogApi)
-  )
+  override def autowireRoutesDef: List[AutowireServer#Router] =
+    List(
+      autowireServer.route[SharedApi](SharedApiImpl),
+      autowireServer.route[AnotherApiExample](AnotherApiExampleImpl),
+    )
 
   lazy val autowireController: AutowireController =
-    new AutowireController(awsLoggingImpl, autowireRoutes)
+    new AutowireController(awsLoggingImpl, autowireRoutesDef)
 }

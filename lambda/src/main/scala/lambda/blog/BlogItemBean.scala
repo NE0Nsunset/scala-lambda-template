@@ -1,6 +1,7 @@
-package lambda.serialization
+package lambda.blog
 
 import lambda.models.BlogItem
+import lambda.serialization.DynamoItemBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
 
 import scala.beans.BeanProperty

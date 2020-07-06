@@ -13,9 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import lambda.serialization.DynamoItemConverters._
 
 /**
- * Basic DynamoDB interactions that all Dynamo Services
- * Should extend.
- */
+  * Basic DynamoDB interactions that all Dynamo Services
+  * Should extend.
+  */
 trait DynamoService[R <: DynamoItem, T <: DynamoItemBean[R]] {
   val clientHandler: DynamoClientT
   val tableSchema: BeanTableSchema[T]
@@ -32,15 +32,15 @@ trait DynamoService[R <: DynamoItem, T <: DynamoItemBean[R]] {
 
     FutureConverters
       .toScala(filterRequest).map(x => Some(x.toItem)).recover {
-      case e: Exception => {
-        println(e.getMessage)
-        None
+        case e: Exception => {
+          println(e.getMessage)
+          None
+        }
       }
-    }
   }
 
   def put(t: T): Future[Unit] = {
-    FutureConverters.toScala(table.putItem(t)).map(_ => Unit)
+    FutureConverters.toScala(table.putItem(t)).map(_ => ())
   }
 
   def putIfNotExists(t: T): Future[Unit] = {
@@ -54,6 +54,6 @@ trait DynamoService[R <: DynamoItem, T <: DynamoItemBean[R]] {
 
     FutureConverters
       .toScala(table.scan().items().limit(limit).subscribe(consumer)).map(_ =>
-      consumer.getList)
+        consumer.getList)
   }
 }

@@ -15,7 +15,4 @@ object Serializer {
   implicit val blogReads = Json.reads[BlogItem]
   implicit val blogWrites = Json.writes[BlogItem]
   implicit val blogFormat = Json.format[BlogItem]
-
-  // TODO write custom formatter to flatten metadata case class for dynamo
-
 }

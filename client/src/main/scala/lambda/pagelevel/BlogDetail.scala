@@ -1,13 +1,14 @@
 package lambda.pagelevel
 
 import com.thoughtworks.binding.{Binding, FutureBinding}
-import lambda.UsesAjaxClient
+import lambda.{IDEHelpers, UsesAjaxClient}
 import lambda.api.BlogApi
 import lambda.routing.UsesSimpleRouter
 import autowire._
 import lambda.serialization.Picklers._
 import org.lrng.binding.html
 import org.scalajs.dom.raw.Node
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import wvlet.airframe._

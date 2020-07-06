@@ -1,7 +1,10 @@
-package lambda.serialization
-import scala.beans.BeanProperty
+package lambda.movie
+
 import lambda.models.MovieItem
+import lambda.serialization.DynamoItemBean
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean
+
+import scala.beans.BeanProperty
 
 @DynamoDbBean
 class MovieItemBean extends DynamoItemBean[MovieItem] {
@@ -13,7 +16,15 @@ class MovieItemBean extends DynamoItemBean[MovieItem] {
 
   def apply(): MovieItemBean = new MovieItemBean()
 
-  def toItem: MovieItem = MovieItem(getPartKey, getRangeKey, getCreatedAt, getLastUpdate, getTitle, getYear, getDescription, getThumbnail)
+  def toItem: MovieItem =
+    MovieItem(getPartKey,
+              getRangeKey,
+              getCreatedAt,
+              getLastUpdate,
+              getTitle,
+              getYear,
+              getDescription,
+              getThumbnail)
 
   override def applyFromItem(r: MovieItem): Unit = {
     super.applyFromItem(r)
