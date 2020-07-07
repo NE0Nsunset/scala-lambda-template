@@ -25,7 +25,7 @@ val serverDeps = Seq(
 lazy val root = Project(id = "lambda-scala-function-root",
     base = file(".")).settings(
     run := {
-      (run in lambdaOffline in Compile).evaluated
+      (run in client in Compile).evaluated
     }
 ).disablePlugins(RevolverPlugin)
 
@@ -73,6 +73,7 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .in(file("shared")).
   settings(scalaVersion := scalaV).
   jsConfigure(_ enablePlugins ScalaJSWeb)
+  .jsSettings(scalaJSUseMainModuleInitializer := true)
   .settings(libraryDependencies ++= Seq(
       "org.scala-js" %% "scalajs-stubs" % "0.6.29" % "provided",
       "org.scalatest" %% "scalatest" % "3.0.3" % "test",
@@ -87,6 +88,8 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
 lazy val client = (project in file("client")).settings(
     scalaVersion := scalaV,
     scalacOptions ++= Seq("-Xxml:coalescing", "-P:scalajs:sjsDefinedByDefault"), //, "-Ymacro-debug-lite")
+    scalaJSUseMainModuleInitializer := true,
+    mainClass in Compile := Some("lambda.FrontendApp"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
     libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % "0.9.7",

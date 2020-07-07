@@ -1,16 +1,12 @@
 package lambda
 
 import com.typesafe.config.ConfigFactory
-import lambda.api.{
-  AnotherApiExample,
-  AnotherApiExampleImpl,
-  SharedApi,
-  SharedApiImpl
-}
+import lambda.api.{AnotherApiExample, AnotherApiExampleImpl, BlogApi, SharedApi, SharedApiImpl}
 import lambda.blog.BlogModule
 import lambda.controller.{AutowireController, AutowireServer}
 import lambda.movie.MovieModule
 import lambda.service.DynamoClientT
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -35,7 +31,7 @@ trait LambdaDependencies extends Module with BlogModule with MovieModule {
   lazy val autowireServer: AutowireServer =
     new AutowireServer(awsLoggingImpl)
 
-  override def autowireRoutesDef: List[AutowireServer#Router] =
+  override def autowireRoutesDef: List[AutowireServer#Router] = super.autowireRoutesDef :::
     List(
       autowireServer.route[SharedApi](SharedApiImpl),
       autowireServer.route[AnotherApiExample](AnotherApiExampleImpl),
