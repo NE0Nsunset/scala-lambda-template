@@ -5,7 +5,7 @@ locals {
   lambda_source_hash = "${base64sha256(file(local.lambda_payload_filename))}"
   front_end_source_hash = "${base64sha256(file(local.frontend_lambda_file))}"
 
-  lambda_payload_filename = "${"${var.project-root}/lambda/target/scala-2.12/lambda-assembly-1.0.jar"}"
+  lambda_payload_filename = "${"${var.project-root}/lambda/target/scala-2.13/lambda-assembly-1.0.jar"}"
 
   frontend_lambda_file = "${"${var.project-root}/client/src/main/js/handler.js"}"
 

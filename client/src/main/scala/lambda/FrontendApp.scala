@@ -2,6 +2,7 @@ package lambda
 
 import wvlet.airframe._
 import org.scalajs.dom.document
+
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.concurrent.ExecutionContext.Implicits.global
 import autowire._
@@ -13,6 +14,8 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constants}
 import org.lrng.binding.html
 import org.scalajs.dom.raw.{Event, Node}
 import com.thoughtworks.binding.bindable._
+
+import scala.scalajs.js.Date
 
 /**
   * Entrypoint for scala.binding / scalajs frontend
@@ -96,10 +99,11 @@ class FrontendApp extends IDEHelpers {
     }.bind
 
   @html def footer: Binding[Node] = {
+    val year = new Date(Date.now()).getFullYear()
     <footer class="page-footer blue-grey darken-2" style="padding-top:0px;">
       <div class="footer-copyright">
         <div class="container">
-          © 2019 Josh Kapple
+          © {year.toString} Josh Kapple
           <a class="grey-text text-lighten-4 right" href="https://www.joshkapple.com" target="_blank">JoshKapple.com</a>
         </div>
       </div>
