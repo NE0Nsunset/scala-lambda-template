@@ -106,7 +106,7 @@ class Home
             <div class="col s12 center">
               <h3><i class="mdi-content-send brown-text"></i></h3>
               <h4>Getting Started</h4>
-              <p>Checkout the <a href="https://bitbucket.org/jkapple/scala-lambda-template/" target="_blank">bitbucket repository</a> and read through the README.md to get a deployable copy of this website. Then, dive into the code to see how the examples work!</p>
+              <p>Checkout the <a href="https://github.com/joshkapple/scala-lambda-template" target="_blank">repository</a> and read through the README.md to get a deployable copy of this website. Then, dive into the code to see how the examples work!</p>
               <p>This website is also a working example of the template. Open the developer console and head to the <a href="/dynamo-examples" onclick={e: Event => {
                 e.preventDefault();
                 simpleRouter.changeToRouteByName(RouteName.DynamoExample.entryName)}}>examples</a> page to see requests and responses in action.</p>

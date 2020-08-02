@@ -67,7 +67,7 @@ class FrontendApp extends IDEHelpers {
           <div class="col s12 m9">
             <ul class="right hide-on-med-and-down">
               <li>
-                <a href="https://github.com/NE0Nsunset/scala-lambda-template" target="_blank">Repo</a>
+                <a href="https://github.com/joshkapple/scala-lambda-template" target="_blank">Repo</a>
               </li>
               <li>
                 <a href="/dynamo-examples" onclick={e: Event => {
