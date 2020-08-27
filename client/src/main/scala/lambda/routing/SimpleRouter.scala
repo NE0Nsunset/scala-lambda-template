@@ -53,7 +53,6 @@ class SimpleRouter {
                           routeProps: List[(String, String)] = Nil) = {
     println(s"changing route to $routeName with ${routeProps.toString}")
     currentPageComponentOpt.value.foreach(_.onDestroy)
-
     currentRouteOpt.value = routeList.find(_.routeName.entryName == routeName)
 
     // TODO cleanup
@@ -64,9 +63,7 @@ class SimpleRouter {
       if (x.startsWith("//")) x.tail else x
     }
 
-    window.history.pushState(Dynamic.literal(),
-                             "",
-                             s"${clientConfig.getStageName}$calculatedPath")
+    window.history.pushState(Dynamic.literal(), "", s"${clientConfig.getStageName}$calculatedPath")
     currentRouteKeyValues = routeProps
     currentPageComponentOpt.value = currentRouteOpt.value
       .map(_.sessionToComponent(FrontendApp.session))
@@ -74,16 +71,21 @@ class SimpleRouter {
   }
 
   def routeFromCurrentLocation = {
+    println("route from current location")
     currentRouteKeyValues = Nil // unset route props
     val href =
       window.location.pathname.replace(clientConfig.getStageName, "")
     val current = routeList.find(_.matches(href))
+    if (currentRouteOpt.value != current){
+      currentPageComponentOpt.value.foreach(_.onDestroy)
+    }
     currentRouteOpt.value = current
     current foreach { x =>
       currentRouteKeyValues = x.routeTokenMap(href)
     }
     currentPageComponentOpt.value = current
       .map(_.sessionToComponent(FrontendApp.session))
+    currentPageComponentOpt.value.foreach(_.onCreate)
   }
 }
 

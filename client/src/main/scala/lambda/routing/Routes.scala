@@ -9,13 +9,13 @@ trait Routes {
   val routeList = List(
     SimpleRoute[Home]("/",
                       RouteName.Home,
-                      (session: Session) => session.build[Home]),
+      (session: Session) => session.withChildSession(newDesign.bind[Home].toSingleton){cs => cs.build[Home]}),
     SimpleRoute[Examples]("/dynamo-examples",
                           RouteName.DynamoExample,
-                          (session: Session) => session.build[Examples]),
+                          (session: Session) => session.withChildSession(newDesign.bind[Examples].toSingleton){cs => cs.build[Examples]}),
     SimpleRoute[BlogDetail]("/blog/:year/:month/:date/:slug",
                             RouteName.BlogDetail,
-                            (session: Session) => session.build[BlogDetail])
+                            (session: Session) => session.withChildSession(newDesign.bind[BlogDetail].toSingleton){cs => cs.build[BlogDetail]})
   )
 
   simpleRouter.addRoutes(routeList)

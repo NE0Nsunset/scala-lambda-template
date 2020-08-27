@@ -32,7 +32,6 @@ object FrontendApp {
   val builtSession = session.build[FrontendApp]
 
   def main(args: Array[String]): Unit = {
-    println("heellll")
     html.render(document.getElementById("lambda-app").asInstanceOf[Node],
                 builtSession.appLayout)
     html.render(document.getElementById("lambda-app-footer").asInstanceOf[Node],
